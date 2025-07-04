@@ -1,0 +1,6 @@
+{"level":"error","message":"MongoDB connection error: connect ECONNREFUSED ::1:27017, connect ECONNREFUSED 127.0.0.1:27017","timestamp":"2025-07-03T14:23:22.046Z"}
+{"level":"error","message":"MongoDB connection error: connect ECONNREFUSED ::1:27017, connect ECONNREFUSED 127.0.0.1:27017","timestamp":"2025-07-03T14:26:33.115Z"}
+{"level":"error","message":"MongoDB connection error: connect ECONNREFUSED 127.0.0.1:27017","timestamp":"2025-07-03T14:35:57.634Z"}
+{"level":"error","message":"MongoDB connection error: connect ECONNREFUSED 127.0.0.1:27017","timestamp":"2025-07-03T14:36:18.348Z"}
+{"level":"error","message":"MongoDB connection error: connect ECONNREFUSED 127.0.0.1:27017","timestamp":"2025-07-03T14:36:47.141Z"}
+{"level":"error","message":"MongoDB connection error: connect ECONNREFUSED ::1:27017, connect ECONNREFUSED 127.0.0.1:27017","timestamp":"2025-07-03T14:38:44.088Z"}

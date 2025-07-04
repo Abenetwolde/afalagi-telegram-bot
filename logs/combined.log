@@ -1,0 +1,46 @@
+{"level":"error","message":"MongoDB connection error: connect ECONNREFUSED ::1:27017, connect ECONNREFUSED 127.0.0.1:27017","timestamp":"2025-07-03T14:23:22.046Z"}
+{"level":"error","message":"MongoDB connection error: connect ECONNREFUSED ::1:27017, connect ECONNREFUSED 127.0.0.1:27017","timestamp":"2025-07-03T14:26:33.115Z"}
+{"level":"info","message":"Bot stopped","timestamp":"2025-07-03T14:35:37.698Z"}
+{"level":"info","message":"Bot started","timestamp":"2025-07-03T14:35:38.026Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2025-07-03T14:35:38.026Z"}
+{"level":"info","message":"Bot stopped","timestamp":"2025-07-03T14:35:38.451Z"}
+{"level":"error","message":"MongoDB connection error: connect ECONNREFUSED 127.0.0.1:27017","timestamp":"2025-07-03T14:35:57.634Z"}
+{"level":"info","message":"Bot stopped","timestamp":"2025-07-03T14:36:08.048Z"}
+{"level":"info","message":"Bot started","timestamp":"2025-07-03T14:36:08.369Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2025-07-03T14:36:08.370Z"}
+{"level":"info","message":"Bot stopped","timestamp":"2025-07-03T14:36:08.674Z"}
+{"level":"error","message":"MongoDB connection error: connect ECONNREFUSED 127.0.0.1:27017","timestamp":"2025-07-03T14:36:18.348Z"}
+{"level":"error","message":"MongoDB connection error: connect ECONNREFUSED 127.0.0.1:27017","timestamp":"2025-07-03T14:36:47.141Z"}
+{"level":"error","message":"MongoDB connection error: connect ECONNREFUSED ::1:27017, connect ECONNREFUSED 127.0.0.1:27017","timestamp":"2025-07-03T14:38:44.088Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2025-07-03T14:54:41.116Z"}
+{"level":"warn","message":"Rate limit exceeded for user 2126443079","timestamp":"2025-07-03T15:08:24.798Z"}
+{"level":"warn","message":"Rate limit exceeded for user 2126443079","timestamp":"2025-07-03T15:08:40.774Z"}
+{"level":"info","message":"Bot stopped","timestamp":"2025-07-03T15:09:30.198Z"}
+{"level":"info","message":"Bot started","timestamp":"2025-07-03T15:09:30.685Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2025-07-03T15:09:30.686Z"}
+{"level":"info","message":"Bot stopped","timestamp":"2025-07-03T15:09:30.750Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2025-07-03T15:09:36.726Z"}
+{"level":"warn","message":"Rate limit exceeded for user 2126443079","timestamp":"2025-07-03T15:09:46.569Z"}
+{"level":"warn","message":"Rate limit exceeded for user 2126443079","timestamp":"2025-07-03T15:09:54.194Z"}
+{"level":"warn","message":"Rate limit exceeded for user 2126443079","timestamp":"2025-07-03T15:09:55.681Z"}
+{"level":"info","message":"Bot stopped","timestamp":"2025-07-03T15:09:57.331Z"}
+{"level":"info","message":"Bot stopped","timestamp":"2025-07-03T15:09:57.336Z"}
+{"level":"info","message":"Bot stopped","timestamp":"2025-07-03T15:09:57.892Z"}
+{"level":"info","message":"Bot stopped","timestamp":"2025-07-03T15:09:57.892Z"}
+{"level":"info","message":"Bot started","timestamp":"2025-07-03T15:10:00.661Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2025-07-03T15:10:00.662Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2025-07-03T15:10:02.860Z"}
+{"level":"info","message":"Bot stopped","timestamp":"2025-07-04T06:36:44.466Z"}
+{"level":"info","message":"Bot stopped","timestamp":"2025-07-04T06:36:44.519Z"}
+{"level":"info","message":"Bot stopped","timestamp":"2025-07-04T06:36:44.519Z"}
+{"level":"info","message":"Bot started","timestamp":"2025-07-04T06:36:44.795Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2025-07-04T06:36:44.812Z"}
+{"level":"info","message":"Bot stopped","timestamp":"2025-07-04T06:36:45.001Z"}
+{"level":"info","message":"Bot stopped","timestamp":"2025-07-04T06:36:45.002Z"}
+{"level":"info","message":"Bot stopped","timestamp":"2025-07-04T06:36:45.002Z"}
+{"level":"info","message":"Bot stopped","timestamp":"2025-07-04T06:36:45.578Z"}
+{"level":"info","message":"Bot stopped","timestamp":"2025-07-04T06:36:45.578Z"}
+{"level":"info","message":"Bot stopped","timestamp":"2025-07-04T06:36:45.579Z"}
+{"level":"info","message":"Bot stopped","timestamp":"2025-07-04T06:36:46.251Z"}
+{"level":"info","message":"Bot stopped","timestamp":"2025-07-04T06:36:46.252Z"}
+{"level":"info","message":"Bot stopped","timestamp":"2025-07-04T06:36:46.251Z"}
