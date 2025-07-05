@@ -12,6 +12,9 @@ import { errorHandlerMiddleware } from './middleware/error-handler.middleware';
 import { connectDB } from './services/database.service';
 import { logger } from './services/logger.service';
 import { BOT_TOKEN, ADMIN_IDS } from './config/config';
+import { reviewCommand } from './commands/review.command';
+import { restartCommand } from './commands/restart.command';
+import { cancelCommand } from './commands/cancel.command';
 
 const bot = new Telegraf(BOT_TOKEN);
 
@@ -20,10 +23,18 @@ bot.use(session());
 bot.use(rateLimitMiddleware);
 bot.use(errorHandlerMiddleware);
 bot.use(stage.middleware());
-
+// bot.use(async (ctx, next) => {
+//   if (ctx.text && ctx.text && ctx.text?.startsWith('/start')) {
+//     await startCommand(ctx);
+//     // Optionally, return here if you don't want other middlewares/handlers to run
+//     return;
+//   }
+//   await next();
+// });
 bot.command('start', startCommand);
-// bot.command('cancel', cancelCommand);
-// bot.command('restart', restartCommand);
+bot.command('cancel', cancelCommand);
+bot.command('restart', restartCommand);
+bot.command('review', reviewCommand)
 
 bot.launch().then(() => {
   logger.info('Bot started');

@@ -1,66 +1,80 @@
 import { Scenes, Markup } from 'telegraf';
 import { Submission } from '../models/submission.model';
 import { User } from '../models/user.model';
+import { Question } from '../models/question.model';
 import { logger } from '../services/logger.service';
-import { IBotContext } from '../../types';
-import { SceneContextScene, WizardScene } from 'telegraf/typings/scenes';
-const questions = [
-  { key: 'name', text: 'Please enter your name' },
-  { key: 'phoneNumber', text: 'Please enter your full phone number', confidential: true },
-  { key: 'birthYear', text: 'Please enter your birth year' },
-  { key: 'age', text: 'Please enter your age' },
-  { key: 'skinColor', text: 'Please enter your skin color' },
-  { key: 'appearance', text: 'Please describe your appearance/beauty' },
-  { key: 'height', text: 'Please enter your height' },
-  { key: 'weight', text: 'Please enter your weight' },
-  { key: 'healthStatus', text: 'Please describe your health status' },
-  { key: 'religion', text: 'Please enter your religion' },
-  { key: 'religiousEducation', text: 'Please describe your religious education' },
-  { key: 'languages', text: 'Please list languages you speak fluently' },
-  { key: 'previousMarriage', text: 'Have you been married before?' },
-  { key: 'children', text: 'Do you have children?' },
-  { key: 'occupation', text: 'What is your occupation?' },
-  { key: 'monthlyIncome', text: 'What is your monthly income?', confidential: true },
-  { key: 'birthPlace', text: 'Where were you born?' },
-  { key: 'currentResidence', text: 'Where do you currently live?' },
-  { key: 'housing', text: 'Describe your housing situation' },
-  { key: 'desiredResidence', text: 'Where do you want to live?' },
-  { key: 'education', text: 'What is your education level?' },
-  { key: 'partnerPreferences', text: 'What are you looking for in a partner?' },
-];
 
-const partnerQuestions = [
-  { key: 'partnerAge', text: 'Preferred partner age?' },
-  { key: 'partnerSkinColor', text: 'Preferred partner skin color?' },
-  { key: 'partnerAppearance', text: 'Preferred partner appearance?' },
-  { key: 'partnerHeight', text: 'Preferred partner height?' },
-  { key: 'partnerWeight', text: 'Preferred partner weight?' },
-  { key: 'partnerEducation', text: 'Preferred partner education level?' },
-  { key: 'partnerReligiousEducation', text: 'Preferred partner religious education?' },
-  { key: 'partnerOccupation', text: 'Preferred partner occupation?' },
-  { key: 'partnerMonthlyIncome', text: 'Preferred partner monthly income?', confidential: true },
-  { key: 'partnerPreviousMarriage', text: 'Preferred partner previous marriage status?' },
-  { key: 'partnerCurrentMarriage', text: 'Preferred partner current marriage status?' },
-  { key: 'partnerChildren', text: 'Preferred partner children status?' },
-  { key: 'partnerHousing', text: 'Preferred partner housing situation?' },
-];
 
-export const questionnaireScene = new Scenes.WizardScene<any>(
+export const questionnaireScene = new Scenes.WizardScene<
+  any
+>(
   'questionnaire',
-  ...[...questions, ...partnerQuestions].map((q, index) => async (ctx:any) => {
-    ctx.wizard.state.answers = ctx.wizard.state.answers || {};
-    await ctx.reply(q.text, Markup.keyboard(['Skip']).oneTime());
-    ctx.wizard.state.currentQuestion = index;
-    return ctx.wizard.next();
-  }),
   async (ctx) => {
-    const index = ctx.wizard.state.currentQuestion;
-    const question = [...questions, ...partnerQuestions][index];
-    if (ctx.message && 'text' in ctx.message && ctx.message.text !== 'Skip') {
-      ctx.wizard.state.answers[question.key] = ctx.message.text;
+
+    // Check for previous submission
+    const user = await User.findOne({ telegramId: ctx.from!.id });
+    ctx.wizard.state.questions = await Question.find()/* .sort({ category: 1 }); */
+
+    ctx.wizard.state.answers = ctx.wizard.state.answers || [];
+    
+    if (user?.lastSubmissionId) {
+      console.log('User has a last submission ID:', user.lastSubmissionId);
+      const lastSubmission = await Submission.findById(user.lastSubmissionId).populate('answers.questionId');
+      if (lastSubmission) {
+        await ctx.reply(
+          'You have a previous submission. Would you like to review/edit it or start a new one?',
+          Markup.inlineKeyboard([
+            Markup.button.callback('Review/Edit', 'review'),
+            Markup.button.callback('Start New', 'new'),
+          ])
+        );
+        return ctx.wizard.next();
+      }
     }
-    if (index < questions.length + partnerQuestions.length - 1) {
-      return ctx.wizard.selectStep(index + 1);
+    await ctx.reply(ctx.wizard.state.questions[0]?.text, Markup.keyboard(['Skip']).oneTime());
+    ctx.wizard.state.currentQuestion = 0;
+    return ctx.wizard.selectStep(2); // Skip review step if no previous submission
+  },
+  async (ctx) => {
+    if (ctx.callbackQuery && 'data' in ctx.callbackQuery) {
+      if (ctx.callbackQuery.data === 'review') {
+        const user = await User.findOne({ telegramId: ctx.from!.id });
+        const lastSubmission = await Submission.findById(user!.lastSubmissionId).populate('answers.questionId');
+        if (lastSubmission) {
+          ctx.wizard.state.answers = lastSubmission.answers;
+          await ctx.reply(
+            'Your previous answers:\n' +
+            lastSubmission.answers
+              .filter(a => !(a.questionId as any).confidential)
+              .map(a => `${(a.questionId as any).text}: ${a.answer}`)
+              .join('\n'),
+            Markup.inlineKeyboard([
+              Markup.button.callback('Edit', 'edit'),
+              Markup.button.callback('Submit', 'submit'),
+            ])
+          );
+          return ctx.wizard.next();
+        }
+      } else if (ctx.callbackQuery.data === 'new') {
+        ctx.wizard.state.answers = [];
+        await ctx.reply(ctx.wizard.state.questions[0]?.text, Markup.keyboard(['Skip']).oneTime());
+        ctx.wizard.state.currentQuestion = 0;
+        return ctx.wizard.selectStep(2);
+      }
+    }
+  },
+  ...Array(100).fill(null).map((_, index) => async (ctx: any) => {
+    const questions = ctx.wizard.state.questions;
+    if (index > 0 && ctx.message && 'text' in ctx.message && ctx.message.text !== 'Skip') {
+      ctx.wizard.state.answers[index - 1] = {
+        questionId: questions[index - 1]?._id,
+        answer: ctx.message.text,
+      };
+    }
+    if (index < questions.length) {
+      await ctx.reply(questions[index].text, Markup.keyboard(['Skip']).oneTime());
+      ctx.wizard.state.currentQuestion = index;
+      return ctx.wizard.next();
     }
 
     const submission = new Submission({
@@ -69,53 +83,80 @@ export const questionnaireScene = new Scenes.WizardScene<any>(
       status: 'pending',
     });
     await submission.save();
+    await User.updateOne(
+      { telegramId: ctx.from!.id },
+      { $set: { lastSubmissionId: submission._id } },
+      { upsert: true }
+    );
+
+    const populatedSubmission = await Submission.findById(submission?._id).populate('answers.questionId');
     await ctx.reply(
       'Submission saved! Preview your answers:\n' +
-      Object.entries(ctx.wizard.state.answers)
-        .filter(([key]) => !questions.find(q => q.key === key)?.confidential)
-        .map(([key, value]) => `${key}: ${value}`).join('\n'),
+      populatedSubmission!.answers
+        .filter(a => !(a.questionId as any).confidential)
+        .map(a => `${(a.questionId as any).text}: ${a.answer}`)
+        .join('\n'),
       Markup.inlineKeyboard([
         Markup.button.callback('Submit', 'submit'),
         Markup.button.callback('Edit', 'edit'),
       ])
     );
     return ctx.wizard.next();
-  },
+  }),
   async (ctx) => {
+    console.log('Final step reached',ctx.callbackQuery );
     if (ctx.callbackQuery && 'data' in ctx.callbackQuery) {
       if (ctx.callbackQuery.data === 'submit') {
+        console.log('Submitting answers for review');
         await ctx.reply('Submission sent for review!');
         return ctx.scene.leave();
       }
       if (ctx.callbackQuery.data === 'edit') {
-        await ctx.reply('Which question would you like to edit?', Markup.keyboard(
-          [...questions, ...partnerQuestions].map(q => q.text)
-        ).oneTime());
+        console.log('Editing submission');
+        await ctx.reply(
+          'Which question would you like to edit?',
+          Markup.keyboard(ctx.wizard.state.questions.map((q:any) => q.text)).oneTime()
+        ); 
         ctx.wizard.state.editing = true;
         return ctx.wizard.next();
-      }
+      } 
     }
   },
   async (ctx) => {
     if (ctx.message && 'text' in ctx.message) {
-      const questionIndex = [...questions, ...partnerQuestions].findIndex(q => q.text === ctx.message.text);
+      const questionIndex = ctx.wizard.state.questions.findIndex((q:any) => q.text === ctx.message.text);
       if (questionIndex >= 0) {
         ctx.wizard.state.currentQuestion = questionIndex;
-        await ctx.reply([...questions, ...partnerQuestions][questionIndex].text);
+        await ctx.reply(ctx.wizard.state.questions[questionIndex].text);
         ctx.wizard.state.editingQuestion = questionIndex;
         return ctx.wizard.next();
       }
-    }
+    } 
   },
   async (ctx) => {
     if (ctx.message && 'text' in ctx.message) {
-      const question = [...questions, ...partnerQuestions][ctx.wizard.state.editingQuestion];
-      ctx.wizard.state.answers[question.key] = ctx.message.text;
-      await ctx.reply('Answer updated! Submit or continue editing.', Markup.inlineKeyboard([
-        Markup.button.callback('Submit', 'submit'),
-        Markup.button.callback('Edit another', 'edit'),
-      ]));
-      return ctx.wizard.selectStep(ctx.wizard.state.currentQuestion + 2);
+      ctx.wizard.state.answers[ctx.wizard.state.editingQuestion] = {
+        questionId: ctx.wizard.state.questions[ctx.wizard.state.editingQuestion]?._id,
+        answer: ctx.message.text,
+      };
+      const submission = await Submission.findOneAndUpdate(
+        { userId: ctx.from!.id, _id: (await User.findOne({ telegramId: ctx.from!.id }))!.lastSubmissionId },
+        { $set: { answers: ctx.wizard.state.answers } },
+        { new: true }
+      );
+      const populatedSubmission = await Submission.findById(submission!?._id).populate('answers.questionId');
+      await ctx.reply(
+        'Answer updated! Submit or continue editing.\n' +
+        populatedSubmission!.answers
+          .filter(a => !(a.questionId as any).confidential)
+          .map(a => `${(a.questionId as any).text}: ${a.answer}`)
+          .join('\n'),
+        Markup.inlineKeyboard([
+          Markup.button.callback('Submit', 'submit'),
+          Markup.button.callback('Edit another', 'edit'),
+        ])
+      );
+      return ctx.wizard.selectStep(ctx.wizard.state.currentQuestion + 3);
     }
   }
 );
