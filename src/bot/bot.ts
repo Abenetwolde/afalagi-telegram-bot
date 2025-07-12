@@ -15,10 +15,12 @@ import { BOT_TOKEN, ADMIN_IDS } from './config/config';
 import { reviewCommand } from './commands/review.command';
 import { restartCommand } from './commands/restart.command';
 import { cancelCommand } from './commands/cancel.command';
+import { userScene } from './scenes/userScene';
 
 const bot = new Telegraf(BOT_TOKEN);
 
-const stage = new Stage([questionnaireScene]);
+const stage = new Stage([questionnaireScene,userScene]);
+
 bot.use(session());
 bot.use(rateLimitMiddleware);
 bot.use(errorHandlerMiddleware);
@@ -32,6 +34,9 @@ bot.use(stage.middleware());
 //   await next();
 // });
 bot.command('start', startCommand);
+bot.command('applications', async (ctx:any) => {
+  await ctx.scene.enter('user');
+});
 bot.command('cancel', cancelCommand);
 bot.command('restart', restartCommand);
 bot.command('review', reviewCommand)
