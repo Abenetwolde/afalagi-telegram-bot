@@ -29,17 +29,34 @@ const formatSubmissionList = (submissions: any[]): string => {
 
 // Helper function to format submission details
 const formatSubmissionDetails = (submission: any, questions: any[]): string => {
+  console.log('Formatting submission details for:', submission._id);
+  console.log('Submission answers:', JSON.stringify(submission.answers, null, 2));
+  console.log('Questions available:', JSON.stringify(questions, null, 2));
+
+  if (!submission.answers || submission.answers.length === 0) {
+    return `Submission ID: ${submission._id}\nStatus: ${submission.status}\nCreated: ${new Date(submission.createdAt).toLocaleDateString()}\n\nAnswers: No answers available.`;
+  }
+
   const answers = submission.answers
     .filter((a: any) => {
-      const question = questions.find(q => q._id.toString() === a.questionId.toString());
-      return question && !question.confidential;
+      if (!a.questionId || !a.questionId._id) {
+        console.log('Skipping answer with missing or invalid questionId:', a);
+        return false;
+      }
+      const question = questions.find(q => q._id.toString() === a.questionId._id.toString());
+      if (!question) {
+        console.log('No matching question found for answer with questionId:', a.questionId._id.toString());
+        return false;
+      }
+      return !question.confidential;
     })
     .map((a: any, index: number) => {
-      const question = questions.find(q => q._id.toString() === a.questionId.toString());
-      return `${index + 1}. ${question?.text || 'Unknown question'}\n_${a.answer}_`;
+      const question = questions.find(q => q._id.toString() === a.questionId._id.toString());
+      return `${index + 1}. ${question?.text || 'Unknown question'}\n_${a.answer || 'No answer provided'}_`;
     })
     .join('\n\n');
-  return `Submission ID: ${submission._id}\nStatus: ${submission.status}\nCreated: ${new Date(submission.createdAt).toLocaleDateString()}\n\nAnswers:\n${answers || 'No answers available.'}`;
+
+  return `Submission ID: ${submission._id}\nStatus: ${submission.status}\nCreated: ${new Date(submission.createdAt).toLocaleDateString()}\n\nAnswers:\n${answers || 'No valid answers found.'}`;
 };
 
 // Helper function to create submission selection keyboard
@@ -78,7 +95,9 @@ export const userScene = new Scenes.WizardScene<any>(
         return ctx.scene.leave();
       }
 
-      const submissions = await Submission.find({ userId: ctx.from!.id }).populate('answers.questionId').sort({ createdAt: -1 });
+      const submissions = await Submission.find({ userId: ctx.from!.id })
+        .populate('answers.questionId')
+        .sort({ createdAt: -1 });
       ctx.wizard.state.submissions = submissions;
 
       if (submissions.length === 0) {
@@ -243,7 +262,7 @@ export const userScene = new Scenes.WizardScene<any>(
           await ctx.reply(
             'Invalid question number. Please enter a valid number:\n' +
             formatSubmissionDetails(
-              { _id: ctx.wizard.state.selectedSubmissionId, answers: ctx.wizard.state.answers },
+              { _id: ctx.wizard.state.selectedSubmissionId, answers: ctx.wizard.state.answers, status: 'pending', createdAt: new Date() },
               ctx.wizard.state.questions
             ),
             { reply_markup: Markup.removeKeyboard().reply_markup, parse_mode: 'Markdown' }
