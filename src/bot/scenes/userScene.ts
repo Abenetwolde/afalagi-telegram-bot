@@ -39,23 +39,31 @@ const formatSubmissionDetails = (submission: any, questions: any[]): string => {
 
   const answers = submission.answers
     .filter((a: any) => {
-      if (!a.questionId || !a.questionId._id) {
-        console.log('Skipping answer with missing or invalid questionId:', a);
+      if (!a.questionId) {
+        console.log('Skipping answer with missing questionId:', JSON.stringify(a, null, 2));
         return false;
       }
-      const question = questions.find(q => q._id.toString() === a.questionId._id.toString());
+      // Handle both populated (a.questionId._id) and non-populated (a.questionId as string) cases
+      const questionIdStr = a.questionId._id ? a.questionId._id.toString() : a.questionId.toString();
+      const question = questions.find(q => {
+        const qIdStr = q._id.toString();
+        console.log(`Comparing questionId: ${qIdStr} with answer questionId: ${questionIdStr}`);
+        return qIdStr === questionIdStr;
+      });
       if (!question) {
-        console.log('No matching question found for answer with questionId:', a.questionId._id.toString());
+        console.log('No matching question found for answer with questionId:', questionIdStr, JSON.stringify(a, null, 2));
         return false;
       }
       return !question.confidential;
     })
     .map((a: any, index: number) => {
-      const question = questions.find(q => q._id.toString() === a.questionId._id.toString());
+      const questionIdStr = a.questionId._id ? a.questionId._id.toString() : a.questionId.toString();
+      const question = questions.find(q => q._id.toString() === questionIdStr);
       return `${index + 1}. ${question?.text || 'Unknown question'}\n_${a.answer || 'No answer provided'}_`;
     })
     .join('\n\n');
 
+  console.log('Formatted answers:', answers || 'No valid answers found.');
   return `Submission ID: ${submission._id}\nStatus: ${submission.status}\nCreated: ${new Date(submission.createdAt).toLocaleDateString()}\n\nAnswers:\n${answers || 'No valid answers found.'}`;
 };
 
@@ -306,32 +314,38 @@ export const userScene = new Scenes.WizardScene<any>(
           answer: ctx.message.text,
         };
 
-        // Save updated answers as a new submission
-        const submission = new Submission({
-          userId: ctx.from!.id,
-          answers: answers.filter((a: any) => a.answer && a.questionId),
-          status: 'pending',
-        });
-        await submission.save();
-        console.log('New submission saved with ID:', submission._id);
-        await User.updateOne(
-          { telegramId: ctx.from!.id },
-          { $set: { lastSubmissionId: submission._id } },
-          { upsert: true }
+        // Update the existing submission
+        await Submission.updateOne(
+          { _id: selectedSubmissionId },
+          {
+            $set: {
+              answers: answers.map((a: any) => ({
+                questionId: a.questionId,
+                answer: a.answer
+              })),
+              updatedAt: new Date()
+            }
+          }
         );
 
-        // Delete the old submission
-        await Submission.deleteOne({ _id: selectedSubmissionId });
+        console.log('Submission updated with ID:', selectedSubmissionId);
+        logger.info(`User ${ctx.from!.id} updated submission ${selectedSubmissionId}`);
 
-        logger.info(`User ${ctx.from!.id} edited submission ${selectedSubmissionId}, new submission ${submission._id}`);
-        await ctx.reply(
-          'Answer updated!\n\nUpdated answers:\n' +
-          formatSubmissionDetails({ _id: submission._id, answers, status: 'pending', createdAt: new Date() }, questions) +
-          '\n\nChoose an action:',
-          { reply_markup: createActionKeyboard().reply_markup, parse_mode: 'Markdown' }
-        );
+        // Fetch the updated submission for display
+        const updatedSubmission = await Submission.findById(selectedSubmissionId).populate('answers.questionId');
+        if (updatedSubmission) {
+          await ctx.reply(
+            'Answer updated!\n\nUpdated answers:\n' +
+            formatSubmissionDetails(updatedSubmission, questions) +
+            '\n\nChoose an action:',
+            { reply_markup: createActionKeyboard().reply_markup, parse_mode: 'Markdown' }
+          );
+        } else {
+          await ctx.reply('Error retrieving updated submission.');
+          return ctx.scene.leave();
+        }
+
         ctx.wizard.state.editing = false;
-        ctx.wizard.state.selectedSubmissionId = submission._id; // Update to new submission
         return ctx.wizard.selectStep(2); // Return to action step
       }
 

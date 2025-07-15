@@ -382,3 +382,98 @@
 {"level":"info","message":"User 7020557931 submitted answers for review","timestamp":"2025-07-14T13:02:29.632Z"}
 {"level":"info","message":"Connected to MongoDB","timestamp":"2025-07-14T13:05:48.539Z"}
 {"level":"info","message":"User 7020557931 canceled submission 6874ffe565a941ea2952bc63","timestamp":"2025-07-14T13:05:55.061Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2025-07-14T14:05:47.607Z"}
+{"level":"info","message":"User 7020557931 canceled submission 6874f9af8a61d9ed4a73c26b","timestamp":"2025-07-14T14:06:07.281Z"}
+{"level":"info","message":"Bot stopped","timestamp":"2025-07-14T14:07:05.205Z"}
+{"level":"info","message":"Bot started","timestamp":"2025-07-14T14:07:05.531Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2025-07-14T14:07:05.531Z"}
+{"level":"info","message":"Bot stopped","timestamp":"2025-07-14T14:07:06.687Z"}
+{"level":"error","message":"MongoDB connection error: connect ECONNREFUSED ::1:27017, connect ECONNREFUSED 127.0.0.1:27017","timestamp":"2025-07-15T08:17:21.193Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2025-07-15T11:02:11.931Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2025-07-15T11:12:01.934Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2025-07-15T11:25:40.166Z"}
+{"level":"info","message":"User 7020557931 updated submission 6872551be5b5faf25ca381a0","timestamp":"2025-07-15T11:26:19.688Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2025-07-15T11:28:02.950Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2025-07-15T11:28:30.306Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2025-07-15T11:28:53.293Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2025-07-15T11:29:03.487Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2025-07-15T11:30:55.865Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2025-07-15T11:31:01.472Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2025-07-15T11:31:06.777Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2025-07-15T11:32:09.514Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2025-07-15T11:32:13.175Z"}
+{"level":"error","message":"Error: Cannot read properties of undefined (reading 'sendMessage')","timestamp":"2025-07-15T11:32:16.845Z"}
+{"level":"error","message":"Error: Cannot read properties of undefined (reading 'sendMessage')","timestamp":"2025-07-15T11:32:19.084Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2025-07-15T11:32:53.778Z"}
+{"level":"error","message":"Error: Cannot read properties of undefined (reading 'sendMessage')","timestamp":"2025-07-15T11:33:00.551Z"}
+{"level":"info","message":"Bot stopped","timestamp":"2025-07-15T11:33:03.800Z"}
+{"level":"info","message":"Bot started","timestamp":"2025-07-15T11:33:04.119Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2025-07-15T11:33:04.120Z"}
+{"level":"info","message":"Bot stopped","timestamp":"2025-07-15T11:33:04.424Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2025-07-15T11:33:10.323Z"}
+{"level":"error","message":"Error: Cannot read properties of undefined (reading 'sendMessage')","timestamp":"2025-07-15T11:33:25.604Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2025-07-15T11:33:46.907Z"}
+{"level":"error","message":"Error: Cannot read properties of undefined (reading 'reply')","timestamp":"2025-07-15T11:33:47.419Z"}
+{"level":"error","message":"Error: Cannot read properties of undefined (reading 'reply')","timestamp":"2025-07-15T11:33:52.596Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2025-07-15T11:34:12.075Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2025-07-15T11:34:20.106Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2025-07-15T11:34:24.521Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2025-07-15T11:34:39.294Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2025-07-15T11:34:59.251Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2025-07-15T11:36:00.574Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2025-07-15T11:37:14.432Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2025-07-15T11:37:40.686Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2025-07-15T11:37:45.512Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2025-07-15T11:37:55.815Z"}
+{"level":"error","message":"Error: Cannot read properties of undefined (reading 'sendMessage')","timestamp":"2025-07-15T11:37:56.331Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2025-07-15T12:42:45.797Z"}
+{"level":"info","message":"Bot stopped","timestamp":"2025-07-15T12:45:21.272Z"}
+{"level":"info","message":"Bot stopped","timestamp":"2025-07-15T12:45:21.275Z"}
+{"level":"info","message":"Bot started","timestamp":"2025-07-15T12:45:21.587Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2025-07-15T12:45:21.588Z"}
+{"level":"info","message":"Bot stopped","timestamp":"2025-07-15T12:45:21.860Z"}
+{"level":"info","message":"Bot stopped","timestamp":"2025-07-15T12:45:21.860Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2025-07-15T12:45:33.940Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2025-07-15T12:51:13.402Z"}
+{"level":"error","message":"Error: Cannot read properties of undefined (reading 'leave')","timestamp":"2025-07-15T12:51:16.321Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2025-07-15T12:55:46.134Z"}
+{"level":"error","message":"Error: Cannot read properties of undefined (reading 'enter')","timestamp":"2025-07-15T12:55:47.649Z"}
+{"level":"error","message":"Error: Cannot read properties of undefined (reading 'enter')","timestamp":"2025-07-15T12:55:48.860Z"}
+{"level":"error","message":"Error: Cannot read properties of undefined (reading 'enter')","timestamp":"2025-07-15T12:56:19.506Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2025-07-15T12:58:49.948Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2025-07-15T13:04:32.562Z"}
+{"level":"info","message":"Bot stopped","timestamp":"2025-07-15T13:04:48.904Z"}
+{"level":"info","message":"Bot stopped","timestamp":"2025-07-15T13:04:48.904Z"}
+{"level":"info","message":"Bot stopped","timestamp":"2025-07-15T13:04:48.909Z"}
+{"level":"info","message":"Bot started","timestamp":"2025-07-15T13:04:49.225Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2025-07-15T13:04:49.226Z"}
+{"level":"info","message":"Bot stopped","timestamp":"2025-07-15T13:04:49.529Z"}
+{"level":"info","message":"Bot stopped","timestamp":"2025-07-15T13:04:49.530Z"}
+{"level":"info","message":"Bot stopped","timestamp":"2025-07-15T13:04:49.529Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2025-07-15T13:04:56.205Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2025-07-15T13:06:48.615Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2025-07-15T13:06:55.658Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2025-07-15T13:07:08.278Z"}
+{"level":"error","message":"Error: Cannot read properties of undefined (reading 'sendMessage')","timestamp":"2025-07-15T13:07:08.812Z"}
+{"level":"error","message":"Error: Cannot read properties of undefined (reading 'sendMessage')","timestamp":"2025-07-15T13:07:10.264Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2025-07-15T13:08:08.778Z"}
+{"level":"error","message":"Error: Cannot read properties of undefined (reading 'sendMessage')","timestamp":"2025-07-15T13:08:09.311Z"}
+{"level":"error","message":"Error: Cannot read properties of undefined (reading 'sendMessage')","timestamp":"2025-07-15T13:08:11.085Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2025-07-15T13:08:22.538Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2025-07-15T13:08:49.220Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2025-07-15T13:09:51.460Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2025-07-15T13:10:35.858Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2025-07-15T13:11:08.883Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2025-07-15T13:12:19.775Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2025-07-15T13:12:26.534Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2025-07-15T13:12:32.435Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2025-07-15T13:13:45.348Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2025-07-15T13:13:52.032Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2025-07-15T14:10:34.980Z"}
+{"level":"info","message":"User 7020557931 submitted answers for review","timestamp":"2025-07-15T14:10:59.437Z"}
+{"level":"info","message":"User 7020557931 updated submission 6872551be5b5faf25ca381a0","timestamp":"2025-07-15T14:11:50.871Z"}
+{"level":"info","message":"User 7020557931 updated submission 6872551be5b5faf25ca381a0","timestamp":"2025-07-15T14:12:07.184Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2025-07-15T14:15:01.532Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2025-07-15T14:15:14.820Z"}
+{"level":"info","message":"User 7020557931 submitted answers for review","timestamp":"2025-07-15T14:18:01.418Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2025-07-15T14:19:53.993Z"}
