@@ -477,3 +477,6 @@
 {"level":"info","message":"Connected to MongoDB","timestamp":"2025-07-15T14:15:14.820Z"}
 {"level":"info","message":"User 7020557931 submitted answers for review","timestamp":"2025-07-15T14:18:01.418Z"}
 {"level":"info","message":"Connected to MongoDB","timestamp":"2025-07-15T14:19:53.993Z"}
+{"level":"info","message":"New user registered: 2126443079","timestamp":"2025-07-15T15:33:09.571Z"}
+{"level":"error","message":"MongoDB connection error: connect ECONNREFUSED ::1:27017, connect ECONNREFUSED 127.0.0.1:27017","timestamp":"2025-07-16T14:28:34.808Z"}
+{"level":"error","message":"MongoDB connection error: connect ECONNREFUSED ::1:27017, connect ECONNREFUSED 127.0.0.1:27017","timestamp":"2025-07-16T14:43:51.489Z"}

@@ -22,8 +22,8 @@ async function handleStartOrCancel(ctx: any) {
   if (ctx.scene.current) {
     console.log(`Exiting current scene: ${ctx.scene.current.id}`);
     await ctx.scene.leave();
-  }
-  if (isCancel) {
+  } 
+  if (isCancel) {  
     console.log('Global start/cancel: cancel triggered');
     await cancelCommand(ctx);
   } else {
