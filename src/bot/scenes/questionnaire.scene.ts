@@ -30,10 +30,9 @@ const formatAnswers = (answers: any[], questions: any[]): string => {
 
 // Helper function to create submission keyboard
 const createSubmissionKeyboard = () => Markup.inlineKeyboard([
-  Markup.button.callback('Submit', 'submit'),
+  Markup.button.callback('Back', 'back'),
   Markup.button.callback('Edit', 'edit'),
 ]);
-
 // Helper function to create back keyboard
 const createBackKeyboard = () => Markup.keyboard(['Back']).oneTime();
 
@@ -44,12 +43,13 @@ export const questionnaireScene = new Scenes.WizardScene<any>(
     console.log('Step 0: User registration and initial check');
     try {
       let user = await User.findOne({ telegramId: ctx.from!.id });
-      
+      console.log('User found:', user ? user.telegramId : 'No user found');
       // Register new user if not exists
       if (!user) {
         user = new User({
           telegramId: ctx.from!.id,
           username: ctx.from?.username || '',
+          isAdmin: false, // Default to false, can be updated later
           createdAt: new Date(),
         });
         await user.save();
@@ -225,29 +225,21 @@ export const questionnaireScene = new Scenes.WizardScene<any>(
     }
   },
   // Step 3: Handle submit/edit
-  async (ctx) => {
-    console.log('Step 3: Handle submit/edit');
+// Step 3: Handle back/edit (unchanged)
+async (ctx) => {
+    console.log('Step 3: Handle back/edit');
     try {
       if (ctx.callbackQuery && 'data' in ctx.callbackQuery) {
-        if (ctx.callbackQuery.data === 'submit') {
-          console.log('Saving submission to database');
-          const submission = new Submission({
-            userId: ctx.from!.id,
-            answers: ctx.wizard.state.answers.filter((a: any) => a.answer && a.questionId),
-            status: 'pending',
-          });
-
-          await submission.save();
-          console.log('Submission saved with ID:', submission._id);
-          await User.updateOne(
-            { telegramId: ctx.from!.id },
-            { $set: { lastSubmissionId: submission._id } },
-            { upsert: true }
+        if (ctx.callbackQuery.data === 'back') {
+          console.log('Back button triggered, returning to review/new selection');
+          await ctx.reply(
+            'You have a previous submission. Would you like to review/edit it or start a new one?',
+            Markup.inlineKeyboard([
+              Markup.button.callback('Review/Edit', 'review'),
+              Markup.button.callback('Start New', 'new'),
+            ])
           );
-
-          logger.info(`User ${ctx.from!.id} submitted answers for review`);
-          await ctx.reply('Submission sent for review!');
-          return ctx.scene.leave();
+          return ctx.wizard.selectStep(1); // Return to Step 1
         }
         if (ctx.callbackQuery.data === 'edit') {
           ctx.wizard.state.editing = true;
@@ -262,114 +254,159 @@ export const questionnaireScene = new Scenes.WizardScene<any>(
           return ctx.wizard.selectStep(4);
         }
       }
-      // If no valid callback, stay in submit/edit step
+      // Check for pending submission before showing keyboard
+      console.log('Checking for existing pending submission');
+      const existingSubmission = await Submission.findOne({
+        userId: ctx.from!.id,
+        status: 'pending',
+      });
+
+      if (existingSubmission) {
+        console.log('Pending submission found:', existingSubmission._id);
+        await ctx.reply(
+          'You already have a pending submission. Please wait for review or edit your existing submission.',
+          {
+            reply_markup: Markup.inlineKeyboard([
+              Markup.button.callback('View/Edit Submission', 'view_submission'),
+            ]).reply_markup,
+          }
+        );
+        // Register action handler for View/Edit button
+        ctx.scene.session.actionHandler = ctx.scene.action('view_submission', async (ctx:any) => {
+          console.log('Inline button: View/Edit Submission triggered');
+          await ctx.scene.leave();
+          await ctx.scene.enter('user');
+        });
+        return ctx.wizard.selectStep(3); // Stay in Step 3
+      }
+
+      // If no valid callback and no pending submission, show back/edit keyboard
       await ctx.reply(
         'Please choose an option:',
         { reply_markup: createSubmissionKeyboard().reply_markup, parse_mode: 'Markdown' }
       );
       return ctx.wizard.selectStep(3);
     } catch (error) {
-      logger.error('Error in submit/edit step:', error);
+      logger.error('Error in back/edit step:', error);
       await ctx.reply('An error occurred. Please try again.');
       return ctx.scene.leave();
     }
   },
-  // Step 4: Select question to edit
-  async (ctx) => {
-    console.log('Step 4: Select question to edit');
+
+// Step 4: Handle question number input and answer update
+async (ctx) => {
+    console.log('Step 4: Handle question number input');
     try {
-      // Ensure user is in editing mode
-      if (!ctx.wizard.state.editing) {
-        console.log('User not in editing mode');
+      if (!ctx.message || !('text' in ctx.message)) {
+        await ctx.reply('Please enter the number of the question you want to edit:');
+        return ctx.wizard.selectStep(4);
+      }
+
+      const input = ctx.message.text.trim();
+      const questionNumber = parseInt(input, 10);
+      const questionIndex = questionNumber - 1; // Convert to 0-based index
+
+      // Validate question number
+      if (isNaN(questionNumber) || questionIndex < 0 || questionIndex >= ctx.wizard.state.questions.length) {
         await ctx.reply(
-          'Please click "Edit" to modify your answers.',
-          { reply_markup: createSubmissionKeyboard().reply_markup, parse_mode: 'Markdown' }
+          'Invalid question number. Please enter a valid number:\n' +
+          formatAnswers(ctx.wizard.state.answers, ctx.wizard.state.questions),
+          { parse_mode: 'Markdown' }
         );
-        return ctx.wizard.selectStep(3);
+        return ctx.wizard.selectStep(4);
       }
 
-      if (ctx.message && 'text' in ctx.message) {
-        if (ctx.message.text === 'Back') {
-          console.log('User clicked Back');
-          ctx.wizard.state.editing = false;
-          await ctx.reply(
-            'Your answers:\n' +
-            formatAnswers(ctx.wizard.state.answers, ctx.wizard.state.questions) +
-            '\n\nChoose an option:',
-            { reply_markup: createSubmissionKeyboard().reply_markup, parse_mode: 'Markdown' }
-          );
-          return ctx.wizard.selectStep(3);
-        }
+      // Store the selected question index
+      ctx.wizard.state.editingQuestionIndex = questionIndex;
+      console.log(`Selected question ${questionNumber}: ${ctx.wizard.state.questions[questionIndex].text}`);
 
-        const questionNumber = parseInt(ctx.message.text) - 1; // Convert to 0-based index
-        if (questionNumber >= 0 && questionNumber < ctx.wizard.state.questions.length) {
-          ctx.wizard.state.editingQuestion = questionNumber;
-          console.log('Selected question for editing:', ctx.wizard.state.questions[questionNumber].text);
-          await ctx.reply(
-            ctx.wizard.state.questions[questionNumber].text,
-            createBackKeyboard()
-          );
-          return ctx.wizard.selectStep(5);
-        } else {
-          console.log('Invalid question number entered:', ctx.message.text);
-          await ctx.reply(
-            'Invalid question number. Please enter a valid number:\n' +
-            formatAnswers(ctx.wizard.state.answers, ctx.wizard.state.questions),
-            { reply_markup: Markup.removeKeyboard().reply_markup, parse_mode: 'Markdown' }
-          );
-          return ctx.wizard.selectStep(4); // Stay in this step for valid input
-        }
-      }
-
+      // Prompt for new answer
       await ctx.reply(
-        'Please enter the number of the question to edit.',
-        { reply_markup: Markup.removeKeyboard().reply_markup, parse_mode: 'Markdown' }
+        `Editing question ${questionNumber}: ${ctx.wizard.state.questions[questionIndex].text}\nPlease enter your new answer:`,
+        { reply_markup: Markup.removeKeyboard().reply_markup }
       );
+
+      // Move to Step 5 to handle the new answer
+      return ctx.wizard.selectStep(5);
     } catch (error) {
-      logger.error('Error in question selection:', error);
+      logger.error('Error in question number input step:', error);
       await ctx.reply('An error occurred. Please try again.');
       return ctx.scene.leave();
     }
   },
-  // Step 5: Update answer
-  async (ctx) => {
-    console.log('Step 5: Update answer');
+
+// Step 5: Handle new answer and update submission
+async (ctx) => {
+    console.log('Step 5: Handle new answer');
     try {
-      if (ctx.message && 'text' in ctx.message) {
-        if (ctx.message.text === 'Back') {
-          console.log('User clicked Back');
-          ctx.wizard.state.editing = false;
-          await ctx.reply(
-            'Your answers:\n' +
-            formatAnswers(ctx.wizard.state.answers, ctx.wizard.state.questions) +
-            '\n\nChoose an option:',
-            { reply_markup: createSubmissionKeyboard().reply_markup, parse_mode: 'Markdown' }
-          );
-          return ctx.wizard.selectStep(3);
-        }
-
-        const { editingQuestion, questions, answers } = ctx.wizard.state;
-        answers[editingQuestion] = {
-          questionId: questions[editingQuestion]._id.toString(),
-          answer: ctx.message.text,
-        };
-
-        console.log('Updated answer for question:', questions[editingQuestion].text);
-        await ctx.reply(
-          'Answer updated!\n\nUpdated answers:\n' +
-          formatAnswers(answers, questions) +
-          '\n\nChoose an option or enter another question number to edit:',
-          { reply_markup: createSubmissionKeyboard().reply_markup, parse_mode: 'Markdown' }
-        );
-        ctx.wizard.state.editing = false;
-        return ctx.wizard.selectStep(3); // Return to submit/edit step
+      if (!ctx.message || !('text' in ctx.message)) {
+        await ctx.reply('Please enter your new answer:');
+        return ctx.wizard.selectStep(5);
       }
 
-      await ctx.reply('Please enter your updated answer.', createBackKeyboard());
+      const newAnswer = ctx.message.text.trim();
+      const questionIndex = ctx.wizard.state.editingQuestionIndex;
+
+      // Update answer in wizard state
+      const answer = ctx.wizard.state.answers.find(
+        (a: any) => a.questionId === ctx.wizard.state.questions[questionIndex]._id.toString()
+      );
+      if (answer) {
+        answer.answer = newAnswer;
+      } else {
+        ctx.wizard.state.answers.push({
+          questionId: ctx.wizard.state.questions[questionIndex]._id.toString(),
+          answer: newAnswer,
+        });
+      }
+
+      // Update Submission in database
+      const user = await User.findOne({ telegramId: ctx.from!.id });
+      if (user && user.lastSubmissionId) {
+        await Submission.updateOne(
+          { _id: user.lastSubmissionId, userId: ctx.from!.id },
+          {
+            $set: {
+              'answers.$[elem].answer': newAnswer,
+              updatedAt: new Date(),
+            },
+          },
+          {
+            arrayFilters: [{ 'elem.questionId': ctx.wizard.state.questions[questionIndex]._id }],
+          }
+        );
+        console.log(`Updated answer for question ${questionIndex + 1} in submission ${user.lastSubmissionId}`);
+      } else {
+        logger.warn(`No submission found for user ${ctx.from!.id}`);
+        await ctx.reply('No submission found to update. Starting a new submission.');
+
+        // Create a new submission as fallback
+        const submission = new Submission({
+          userId: ctx.from!.id,
+          answers: ctx.wizard.state.answers.filter((a: any) => a.answer && a.questionId),
+          status: 'pending',
+        });
+        await submission.save();
+        await User.updateOne(
+          { telegramId: ctx.from!.id },
+          { $set: { lastSubmissionId: submission._id } },
+          { upsert: true }
+        );
+        console.log('New submission created with ID:', submission._id);
+      }
+
+      // Return to Step 3 to show updated answers
+      await ctx.reply(
+        'Answer updated! Your answers:\n' +
+        formatAnswers(ctx.wizard.state.answers, ctx.wizard.state.questions) +
+        '\n\nChoose an option:',
+        { reply_markup: createSubmissionKeyboard().reply_markup, parse_mode: 'Markdown' }
+      );
+      return ctx.wizard.selectStep(3);
     } catch (error) {
-      logger.error('Error updating answer:', error);
-      await ctx.reply('An error occurred while updating your answer.');
+      logger.error('Error in answer update step:', error);
+      await ctx.reply('An error occurred. Please try again.');
       return ctx.scene.leave();
     }
-  }
+  },
 );

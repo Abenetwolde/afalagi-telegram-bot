@@ -12,6 +12,7 @@ import { reviewCommand } from './commands/review.command';
 import { restartCommand } from './commands/restart.command';
 import { cancelCommand } from './commands/cancel.command';
 import { userScene } from './scenes/userScene';
+import { adminScene } from './scenes/admin.scene';
 
 const bot = new Telegraf(BOT_TOKEN);
 bot.use(session());
@@ -30,7 +31,7 @@ async function handleStartOrCancel(ctx: any) {
     console.log('Global start/cancel: start triggered');
     await ctx.reply(
       'Welcome! Please fill out the form to continue.',
-      {
+      { 
         reply_markup: Markup.inlineKeyboard([
           Markup.button.callback('Apply', 'apply_to_questionnaire'),
         ]).reply_markup,
@@ -46,10 +47,11 @@ async function handleStartOrCancel(ctx: any) {
     );
   }
 }
-const stage = new Stage([questionnaireScene, userScene]);
+const stage = new Stage([questionnaireScene, userScene,adminScene]);
 // Remove individual stage.command and stage.hears for start/cancel
 stage.command(['start', 'cancel'], handleStartOrCancel);
 stage.hears(/^(start|cancel)$/i, handleStartOrCancel);
+
 // Handle inline Apply button
 stage.action('apply_to_questionnaire', async (ctx: any) => {
   console.log('Inline button: Apply triggered');
@@ -118,6 +120,14 @@ bot.command('review', async (ctx: any) => {
   }
   await reviewCommand(ctx);
 });
+bot.command('admin', async (ctx: any) => {
+  console.log('Global /review command triggered');
+  if (ctx.scene.current) {
+    console.log(`Exiting current scene: ${ctx.scene.current.id}`);
+    await ctx.scene.leave();
+  }
+  await ctx.scene.enter('admin');
+});
 
 
 bot.telegram.setMyCommands([
@@ -127,6 +137,7 @@ bot.telegram.setMyCommands([
   { command: 'myapplications', description: 'View your applications' },
   { command: 'restart', description: 'Restart your session' },
   { command: 'review', description: 'Review applications (admin only)' },
+    { command: 'admin', description: ' (admin only)' },
 ]);
 // Start bot
 bot.launch().then(() => {
