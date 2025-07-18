@@ -43,6 +43,7 @@ export const questionnaireScene = new Scenes.WizardScene<any>(
     console.log('Step 0: User registration and initial check');
     try {
       let user = await User.findOne({ telegramId: ctx.from!.id });
+      
       console.log('User found:', user ? user.telegramId : 'No user found');
       // Register new user if not exists
       if (!user) {
