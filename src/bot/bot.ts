@@ -16,7 +16,7 @@ import { adminScene } from './scenes/admin.scene';
 
 const bot = new Telegraf(BOT_TOKEN);
 bot.use(session());
-bot.use(rateLimitMiddleware);
+// bot.use(rateLimitMiddleware);
 bot.use(errorHandlerMiddleware);
 async function handleStartOrCancel(ctx: any) {
   const isCancel = /cancel/i.test(ctx.message?.text || ctx.update?.message?.text || ctx.updateType === 'callback_query' && ctx.update?.callback_query?.data === 'cancel');

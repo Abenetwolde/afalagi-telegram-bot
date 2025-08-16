@@ -534,3 +534,36 @@
 {"level":"info","message":"Bot stopped","timestamp":"2025-07-17T16:33:14.316Z"}
 {"level":"info","message":"Bot stopped","timestamp":"2025-07-17T16:33:48.781Z"}
 {"level":"info","message":"Bot stopped","timestamp":"2025-07-17T16:33:48.781Z"}
+{"level":"error","message":"MongoDB connection error: connect ECONNREFUSED 127.0.0.1:27017","timestamp":"2025-08-15T13:32:20.105Z"}
+{"level":"warn","message":"Rate limit exceeded for user 7020557931","timestamp":"2025-08-15T13:44:50.096Z"}
+{"level":"warn","message":"Rate limit exceeded for user 7020557931","timestamp":"2025-08-15T13:44:50.103Z"}
+{"level":"error","message":"MongoDB connection error: connect ECONNREFUSED 127.0.0.1:27017","timestamp":"2025-08-15T13:45:19.074Z"}
+{"level":"warn","message":"Rate limit exceeded for user 7020557931","timestamp":"2025-08-15T13:46:09.859Z"}
+{"level":"warn","message":"Rate limit exceeded for user 7020557931","timestamp":"2025-08-15T13:46:09.884Z"}
+{"level":"info","message":"Bot stopped","timestamp":"2025-08-15T13:46:17.091Z"}
+{"level":"info","message":"Bot stopped","timestamp":"2025-08-15T13:46:17.115Z"}
+{"level":"info","message":"Bot started","timestamp":"2025-08-15T13:46:17.236Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2025-08-15T13:46:17.237Z"}
+{"level":"info","message":"Bot stopped","timestamp":"2025-08-15T13:46:18.145Z"}
+{"level":"error","message":"MongoDB connection error: connect ECONNREFUSED 127.0.0.1:27017","timestamp":"2025-08-15T13:46:38.794Z"}
+{"level":"error","message":"MongoDB connection error: connect ECONNREFUSED 127.0.0.1:27017","timestamp":"2025-08-15T14:40:30.172Z"}
+{"level":"info","message":"Bot stopped","timestamp":"2025-08-15T14:43:26.232Z"}
+{"level":"info","message":"Bot stopped","timestamp":"2025-08-15T14:43:26.253Z"}
+{"level":"info","message":"Bot started","timestamp":"2025-08-15T14:43:26.342Z"}
+{"level":"info","message":"Bot stopped","timestamp":"2025-08-15T15:05:04.848Z"}
+{"level":"info","message":"Bot stopped","timestamp":"2025-08-15T15:05:04.873Z"}
+{"level":"info","message":"Bot started","timestamp":"2025-08-15T15:05:05.247Z"}
+{"level":"error","message":"Error in initial step: Operation `users.findOne()` buffering timed out after 10000ms","stack":"MongooseError: Operation `users.findOne()` buffering timed out after 10000ms\n    at Timeout.<anonymous> (/home/ubuntu/Documents/afalagi-telegram-bot/node_modules/mongoose/lib/drivers/node-mongodb-native/collection.js:187:23)\n    at listOnTimeout (node:internal/timers:573:17)\n    at processTimers (node:internal/timers:514:7)","timestamp":"2025-08-15T15:06:19.483Z"}
+{"level":"error","message":"Error in initial step: Operation `users.findOne()` buffering timed out after 10000ms","stack":"MongooseError: Operation `users.findOne()` buffering timed out after 10000ms\n    at Timeout.<anonymous> (/home/ubuntu/Documents/afalagi-telegram-bot/node_modules/mongoose/lib/drivers/node-mongodb-native/collection.js:187:23)\n    at listOnTimeout (node:internal/timers:573:17)\n    at processTimers (node:internal/timers:514:7)","timestamp":"2025-08-15T15:06:29.793Z"}
+{"level":"info","message":"Bot stopped","timestamp":"2025-08-15T15:08:09.196Z"}
+{"level":"info","message":"Bot stopped","timestamp":"2025-08-15T15:08:09.216Z"}
+{"level":"info","message":"Bot started","timestamp":"2025-08-15T15:08:09.300Z"}
+{"level":"info","message":"Bot stopped","timestamp":"2025-08-15T15:08:26.261Z"}
+{"level":"info","message":"Bot stopped","timestamp":"2025-08-15T15:08:26.281Z"}
+{"level":"info","message":"Bot started","timestamp":"2025-08-15T15:08:26.370Z"}
+{"level":"info","message":"Bot stopped","timestamp":"2025-08-15T16:03:26.233Z"}
+{"level":"info","message":"Bot stopped","timestamp":"2025-08-15T16:03:26.255Z"}
+{"level":"info","message":"Bot started","timestamp":"2025-08-15T16:03:26.652Z"}
+{"level":"info","message":"Bot stopped","timestamp":"2025-08-15T16:06:07.922Z"}
+{"level":"info","message":"Bot stopped","timestamp":"2025-08-15T16:06:07.944Z"}
+{"level":"info","message":"Bot started","timestamp":"2025-08-15T16:06:08.031Z"}
