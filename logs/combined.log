@@ -567,3 +567,240 @@
 {"level":"info","message":"Bot stopped","timestamp":"2025-08-15T16:06:07.922Z"}
 {"level":"info","message":"Bot stopped","timestamp":"2025-08-15T16:06:07.944Z"}
 {"level":"info","message":"Bot started","timestamp":"2025-08-15T16:06:08.031Z"}
+{"level":"error","message":"Error in initial step: Operation `users.findOne()` buffering timed out after 10000ms","stack":"MongooseError: Operation `users.findOne()` buffering timed out after 10000ms\n    at Timeout.<anonymous> (/home/ubuntu/Documents/afalagi-telegram-bot/node_modules/mongoose/lib/drivers/node-mongodb-native/collection.js:187:23)\n    at listOnTimeout (node:internal/timers:573:17)\n    at processTimers (node:internal/timers:514:7)","timestamp":"2025-08-16T08:02:56.540Z"}
+{"level":"error","message":"Error in initial step: Operation `users.findOne()` buffering timed out after 10000ms","stack":"MongooseError: Operation `users.findOne()` buffering timed out after 10000ms\n    at Timeout.<anonymous> (/home/ubuntu/Documents/afalagi-telegram-bot/node_modules/mongoose/lib/drivers/node-mongodb-native/collection.js:187:23)\n    at listOnTimeout (node:internal/timers:573:17)\n    at processTimers (node:internal/timers:514:7)","timestamp":"2025-08-16T08:05:57.485Z"}
+{"level":"error","message":"Error in initial step: Operation `users.findOne()` buffering timed out after 10000ms","stack":"MongooseError: Operation `users.findOne()` buffering timed out after 10000ms\n    at Timeout.<anonymous> (/home/ubuntu/Documents/afalagi-telegram-bot/node_modules/mongoose/lib/drivers/node-mongodb-native/collection.js:187:23)\n    at listOnTimeout (node:internal/timers:573:17)\n    at processTimers (node:internal/timers:514:7)","timestamp":"2025-08-16T08:07:59.431Z"}
+{"level":"error","message":"Error in initial step: Operation `users.findOne()` buffering timed out after 10000ms","stack":"MongooseError: Operation `users.findOne()` buffering timed out after 10000ms\n    at Timeout.<anonymous> (/home/ubuntu/Documents/afalagi-telegram-bot/node_modules/mongoose/lib/drivers/node-mongodb-native/collection.js:187:23)\n    at listOnTimeout (node:internal/timers:573:17)\n    at processTimers (node:internal/timers:514:7)","timestamp":"2025-08-16T08:09:14.446Z"}
+{"level":"info","message":"Step 0: User registration and initial check","timestamp":"2025-08-16T11:11:12.651Z"}
+{"clientVersion":"6.14.0","level":"error","message":"Error in initial step: \nInvalid `prisma.user.upsert()` invocation in\n/home/ubuntu/Documents/afalagi-telegram-bot/src/bot/scenes/questionnaire.scene.ts:52:36\n\n  49 logger.info('Step 0: User registration and initial check');\n  50 try {\n  51   // Find a user by their unique telegramId, or create one if they don't exist\n→ 52   let user = await prisma.user.upsert(\nError occurred during query execution:\nConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Error { kind: ToSql(0), cause: Some(Error { kind: ConversionError(\"Unable to fit integer value '7020557931' into an INT4 (32-bit signed integer).\"), original_code: None, original_message: None }) }), transient: false })","name":"PrismaClientUnknownRequestError","stack":"PrismaClientUnknownRequestError: \nInvalid `prisma.user.upsert()` invocation in\n/home/ubuntu/Documents/afalagi-telegram-bot/src/bot/scenes/questionnaire.scene.ts:52:36\n\n  49 logger.info('Step 0: User registration and initial check');\n  50 try {\n  51   // Find a user by their unique telegramId, or create one if they don't exist\n→ 52   let user = await prisma.user.upsert(\nError occurred during query execution:\nConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Error { kind: ToSql(0), cause: Some(Error { kind: ConversionError(\"Unable to fit integer value '7020557931' into an INT4 (32-bit signed integer).\"), original_code: None, original_message: None }) }), transient: false })\n    at ei.handleRequestError (/home/ubuntu/Documents/afalagi-telegram-bot/node_modules/@prisma/client/src/runtime/RequestHandler.ts:237:13)\n    at ei.handleAndLogRequestError (/home/ubuntu/Documents/afalagi-telegram-bot/node_modules/@prisma/client/src/runtime/RequestHandler.ts:174:12)\n    at ei.request (/home/ubuntu/Documents/afalagi-telegram-bot/node_modules/@prisma/client/src/runtime/RequestHandler.ts:143:12)\n    at async a (/home/ubuntu/Documents/afalagi-telegram-bot/node_modules/@prisma/client/src/runtime/getPrismaClient.ts:833:24)\n    at async /home/ubuntu/Documents/afalagi-telegram-bot/src/bot/scenes/questionnaire.scene.ts:52:18\n    at async execute (/home/ubuntu/Documents/afalagi-telegram-bot/node_modules/telegraf/lib/composer.js:518:17)\n    at async /home/ubuntu/Documents/afalagi-telegram-bot/node_modules/telegraf/lib/composer.js:519:21\n    at async execute (/home/ubuntu/Documents/afalagi-telegram-bot/node_modules/telegraf/lib/composer.js:518:17)\n    at async /home/ubuntu/Documents/afalagi-telegram-bot/node_modules/telegraf/lib/composer.js:519:21\n    at async execute (/home/ubuntu/Documents/afalagi-telegram-bot/node_modules/telegraf/lib/composer.js:518:17)","timestamp":"2025-08-16T11:11:12.857Z"}
+{"level":"info","message":"Bot stopped","timestamp":"2025-08-16T11:11:44.139Z"}
+{"level":"info","message":"Bot stopped","timestamp":"2025-08-16T11:11:44.165Z"}
+{"level":"info","message":"Bot started","timestamp":"2025-08-16T11:11:44.541Z"}
+{"level":"info","message":"Step 0: User registration and initial check","timestamp":"2025-08-16T11:11:56.373Z"}
+{"clientVersion":"6.14.0","level":"error","message":"Error in initial step: \nInvalid `prisma.user.upsert()` invocation in\n/home/ubuntu/Documents/afalagi-telegram-bot/src/bot/scenes/questionnaire.scene.ts:52:36\n\n  49 logger.info('Step 0: User registration and initial check');\n  50 try {\n  51   // Find a user by their unique telegramId, or create one if they don't exist\n→ 52   let user = await prisma.user.upsert(\nError occurred during query execution:\nConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Error { kind: ToSql(0), cause: Some(Error { kind: ConversionError(\"Unable to fit integer value '7020557931' into an INT4 (32-bit signed integer).\"), original_code: None, original_message: None }) }), transient: false })","name":"PrismaClientUnknownRequestError","stack":"PrismaClientUnknownRequestError: \nInvalid `prisma.user.upsert()` invocation in\n/home/ubuntu/Documents/afalagi-telegram-bot/src/bot/scenes/questionnaire.scene.ts:52:36\n\n  49 logger.info('Step 0: User registration and initial check');\n  50 try {\n  51   // Find a user by their unique telegramId, or create one if they don't exist\n→ 52   let user = await prisma.user.upsert(\nError occurred during query execution:\nConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Error { kind: ToSql(0), cause: Some(Error { kind: ConversionError(\"Unable to fit integer value '7020557931' into an INT4 (32-bit signed integer).\"), original_code: None, original_message: None }) }), transient: false })\n    at ei.handleRequestError (/home/ubuntu/Documents/afalagi-telegram-bot/node_modules/@prisma/client/src/runtime/RequestHandler.ts:237:13)\n    at ei.handleAndLogRequestError (/home/ubuntu/Documents/afalagi-telegram-bot/node_modules/@prisma/client/src/runtime/RequestHandler.ts:174:12)\n    at ei.request (/home/ubuntu/Documents/afalagi-telegram-bot/node_modules/@prisma/client/src/runtime/RequestHandler.ts:143:12)\n    at async a (/home/ubuntu/Documents/afalagi-telegram-bot/node_modules/@prisma/client/src/runtime/getPrismaClient.ts:833:24)\n    at async /home/ubuntu/Documents/afalagi-telegram-bot/src/bot/scenes/questionnaire.scene.ts:52:18\n    at async execute (/home/ubuntu/Documents/afalagi-telegram-bot/node_modules/telegraf/lib/composer.js:518:17)\n    at async /home/ubuntu/Documents/afalagi-telegram-bot/node_modules/telegraf/lib/composer.js:519:21\n    at async execute (/home/ubuntu/Documents/afalagi-telegram-bot/node_modules/telegraf/lib/composer.js:518:17)\n    at async /home/ubuntu/Documents/afalagi-telegram-bot/node_modules/telegraf/lib/composer.js:519:21\n    at async execute (/home/ubuntu/Documents/afalagi-telegram-bot/node_modules/telegraf/lib/composer.js:518:17)","timestamp":"2025-08-16T11:11:56.504Z"}
+{"level":"info","message":"Bot stopped","timestamp":"2025-08-16T11:16:21.084Z"}
+{"level":"info","message":"Bot stopped","timestamp":"2025-08-16T11:16:21.110Z"}
+{"level":"info","message":"Bot started","timestamp":"2025-08-16T11:16:21.187Z"}
+{"level":"info","message":"Step 0: User registration and initial check","timestamp":"2025-08-16T11:16:32.159Z"}
+{"clientVersion":"6.14.0","level":"error","message":"Error in initial step: \nInvalid `prisma.user.upsert()` invocation in\n/home/ubuntu/Documents/afalagi-telegram-bot/src/bot/scenes/questionnaire.scene.ts:52:36\n\n  49 logger.info('Step 0: User registration and initial check');\n  50 try {\n  51   // Find a user by their unique telegramId, or create one if they don't exist\n→ 52   let user = await prisma.user.upsert(\nError occurred during query execution:\nConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Error { kind: ToSql(0), cause: Some(Error { kind: ConversionError(\"Unable to fit integer value '7020557931' into an INT4 (32-bit signed integer).\"), original_code: None, original_message: None }) }), transient: false })","name":"PrismaClientUnknownRequestError","stack":"PrismaClientUnknownRequestError: \nInvalid `prisma.user.upsert()` invocation in\n/home/ubuntu/Documents/afalagi-telegram-bot/src/bot/scenes/questionnaire.scene.ts:52:36\n\n  49 logger.info('Step 0: User registration and initial check');\n  50 try {\n  51   // Find a user by their unique telegramId, or create one if they don't exist\n→ 52   let user = await prisma.user.upsert(\nError occurred during query execution:\nConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Error { kind: ToSql(0), cause: Some(Error { kind: ConversionError(\"Unable to fit integer value '7020557931' into an INT4 (32-bit signed integer).\"), original_code: None, original_message: None }) }), transient: false })\n    at ei.handleRequestError (/home/ubuntu/Documents/afalagi-telegram-bot/node_modules/@prisma/client/src/runtime/RequestHandler.ts:237:13)\n    at ei.handleAndLogRequestError (/home/ubuntu/Documents/afalagi-telegram-bot/node_modules/@prisma/client/src/runtime/RequestHandler.ts:174:12)\n    at ei.request (/home/ubuntu/Documents/afalagi-telegram-bot/node_modules/@prisma/client/src/runtime/RequestHandler.ts:143:12)\n    at async a (/home/ubuntu/Documents/afalagi-telegram-bot/node_modules/@prisma/client/src/runtime/getPrismaClient.ts:833:24)\n    at async /home/ubuntu/Documents/afalagi-telegram-bot/src/bot/scenes/questionnaire.scene.ts:52:18\n    at async execute (/home/ubuntu/Documents/afalagi-telegram-bot/node_modules/telegraf/lib/composer.js:518:17)\n    at async /home/ubuntu/Documents/afalagi-telegram-bot/node_modules/telegraf/lib/composer.js:519:21\n    at async execute (/home/ubuntu/Documents/afalagi-telegram-bot/node_modules/telegraf/lib/composer.js:518:17)\n    at async /home/ubuntu/Documents/afalagi-telegram-bot/node_modules/telegraf/lib/composer.js:519:21\n    at async execute (/home/ubuntu/Documents/afalagi-telegram-bot/node_modules/telegraf/lib/composer.js:518:17)","timestamp":"2025-08-16T11:16:32.297Z"}
+{"level":"info","message":"Bot stopped","timestamp":"2025-08-16T11:16:37.619Z"}
+{"level":"info","message":"Bot stopped","timestamp":"2025-08-16T11:16:37.642Z"}
+{"level":"info","message":"Bot started","timestamp":"2025-08-16T11:16:37.724Z"}
+{"level":"info","message":"Step 0: User registration and initial check","timestamp":"2025-08-16T11:19:36.576Z"}
+{"level":"info","message":"User upserted: 7020557931","timestamp":"2025-08-16T11:19:36.665Z"}
+{"level":"info","message":"Sending first question:","timestamp":"2025-08-16T11:19:36.668Z"}
+{"level":"info","message":"Step 2: Question answering loop","timestamp":"2025-08-16T11:19:42.265Z"}
+{"level":"info","message":"Total questions:","timestamp":"2025-08-16T11:19:42.265Z"}
+{"level":"info","message":"Current index:","timestamp":"2025-08-16T11:19:42.266Z"}
+{"level":"info","message":"Sending next question:","timestamp":"2025-08-16T11:19:42.266Z"}
+{"level":"info","message":"Step 2: Question answering loop","timestamp":"2025-08-16T11:19:45.911Z"}
+{"level":"info","message":"Total questions:","timestamp":"2025-08-16T11:19:45.911Z"}
+{"level":"info","message":"Current index:","timestamp":"2025-08-16T11:19:45.911Z"}
+{"level":"info","message":"Sending next question:","timestamp":"2025-08-16T11:19:45.913Z"}
+{"level":"info","message":"Step 2: Question answering loop","timestamp":"2025-08-16T11:19:52.619Z"}
+{"level":"info","message":"Total questions:","timestamp":"2025-08-16T11:19:52.619Z"}
+{"level":"info","message":"Current index:","timestamp":"2025-08-16T11:19:52.619Z"}
+{"level":"info","message":"Sending next question:","timestamp":"2025-08-16T11:19:52.619Z"}
+{"level":"info","message":"Step 2: Question answering loop","timestamp":"2025-08-16T11:19:59.186Z"}
+{"level":"info","message":"Total questions:","timestamp":"2025-08-16T11:19:59.186Z"}
+{"level":"info","message":"Current index:","timestamp":"2025-08-16T11:19:59.187Z"}
+{"level":"info","message":"Sending next question:","timestamp":"2025-08-16T11:19:59.187Z"}
+{"level":"info","message":"Step 2: Question answering loop","timestamp":"2025-08-16T11:20:06.335Z"}
+{"level":"info","message":"Total questions:","timestamp":"2025-08-16T11:20:06.335Z"}
+{"level":"info","message":"Current index:","timestamp":"2025-08-16T11:20:06.335Z"}
+{"level":"info","message":"Sending next question:","timestamp":"2025-08-16T11:20:06.336Z"}
+{"level":"info","message":"Step 2: Question answering loop","timestamp":"2025-08-16T11:20:08.851Z"}
+{"level":"info","message":"Total questions:","timestamp":"2025-08-16T11:20:08.852Z"}
+{"level":"info","message":"Current index:","timestamp":"2025-08-16T11:20:08.852Z"}
+{"level":"info","message":"Sending next question:","timestamp":"2025-08-16T11:20:08.852Z"}
+{"level":"info","message":"Step 2: Question answering loop","timestamp":"2025-08-16T11:20:10.978Z"}
+{"level":"info","message":"Total questions:","timestamp":"2025-08-16T11:20:10.978Z"}
+{"level":"info","message":"Current index:","timestamp":"2025-08-16T11:20:10.979Z"}
+{"level":"info","message":"Sending next question:","timestamp":"2025-08-16T11:20:10.979Z"}
+{"level":"info","message":"Step 2: Question answering loop","timestamp":"2025-08-16T11:20:13.084Z"}
+{"level":"info","message":"Total questions:","timestamp":"2025-08-16T11:20:13.084Z"}
+{"level":"info","message":"Current index:","timestamp":"2025-08-16T11:20:13.084Z"}
+{"level":"info","message":"Sending next question:","timestamp":"2025-08-16T11:20:13.084Z"}
+{"level":"info","message":"Step 2: Question answering loop","timestamp":"2025-08-16T11:20:15.277Z"}
+{"level":"info","message":"Total questions:","timestamp":"2025-08-16T11:20:15.277Z"}
+{"level":"info","message":"Current index:","timestamp":"2025-08-16T11:20:15.277Z"}
+{"level":"info","message":"Sending next question:","timestamp":"2025-08-16T11:20:15.277Z"}
+{"level":"info","message":"Step 2: Question answering loop","timestamp":"2025-08-16T11:20:17.588Z"}
+{"level":"info","message":"Total questions:","timestamp":"2025-08-16T11:20:17.589Z"}
+{"level":"info","message":"Current index:","timestamp":"2025-08-16T11:20:17.589Z"}
+{"level":"info","message":"Sending next question:","timestamp":"2025-08-16T11:20:17.589Z"}
+{"level":"info","message":"Step 2: Question answering loop","timestamp":"2025-08-16T11:20:19.379Z"}
+{"level":"info","message":"Total questions:","timestamp":"2025-08-16T11:20:19.379Z"}
+{"level":"info","message":"Current index:","timestamp":"2025-08-16T11:20:19.379Z"}
+{"level":"info","message":"Sending next question:","timestamp":"2025-08-16T11:20:19.380Z"}
+{"level":"info","message":"Step 2: Question answering loop","timestamp":"2025-08-16T11:20:20.999Z"}
+{"level":"info","message":"Total questions:","timestamp":"2025-08-16T11:20:20.999Z"}
+{"level":"info","message":"Current index:","timestamp":"2025-08-16T11:20:20.999Z"}
+{"level":"info","message":"Sending next question:","timestamp":"2025-08-16T11:20:20.999Z"}
+{"level":"info","message":"Step 2: Question answering loop","timestamp":"2025-08-16T11:20:22.751Z"}
+{"level":"info","message":"Total questions:","timestamp":"2025-08-16T11:20:22.751Z"}
+{"level":"info","message":"Current index:","timestamp":"2025-08-16T11:20:22.751Z"}
+{"level":"info","message":"Sending next question:","timestamp":"2025-08-16T11:20:22.751Z"}
+{"level":"info","message":"Step 2: Question answering loop","timestamp":"2025-08-16T11:20:24.375Z"}
+{"level":"info","message":"Total questions:","timestamp":"2025-08-16T11:20:24.376Z"}
+{"level":"info","message":"Current index:","timestamp":"2025-08-16T11:20:24.376Z"}
+{"level":"info","message":"Sending next question:","timestamp":"2025-08-16T11:20:24.376Z"}
+{"level":"info","message":"Step 2: Question answering loop","timestamp":"2025-08-16T11:20:26.461Z"}
+{"level":"info","message":"Total questions:","timestamp":"2025-08-16T11:20:26.462Z"}
+{"level":"info","message":"Current index:","timestamp":"2025-08-16T11:20:26.462Z"}
+{"level":"info","message":"Sending next question:","timestamp":"2025-08-16T11:20:26.462Z"}
+{"level":"info","message":"Step 2: Question answering loop","timestamp":"2025-08-16T11:20:28.045Z"}
+{"level":"info","message":"Total questions:","timestamp":"2025-08-16T11:20:28.045Z"}
+{"level":"info","message":"Current index:","timestamp":"2025-08-16T11:20:28.045Z"}
+{"level":"info","message":"Sending next question:","timestamp":"2025-08-16T11:20:28.045Z"}
+{"level":"info","message":"Step 2: Question answering loop","timestamp":"2025-08-16T11:20:29.818Z"}
+{"level":"info","message":"Total questions:","timestamp":"2025-08-16T11:20:29.818Z"}
+{"level":"info","message":"Current index:","timestamp":"2025-08-16T11:20:29.818Z"}
+{"level":"info","message":"Sending next question:","timestamp":"2025-08-16T11:20:29.818Z"}
+{"level":"info","message":"Step 2: Question answering loop","timestamp":"2025-08-16T11:20:31.466Z"}
+{"level":"info","message":"Total questions:","timestamp":"2025-08-16T11:20:31.467Z"}
+{"level":"info","message":"Current index:","timestamp":"2025-08-16T11:20:31.467Z"}
+{"level":"info","message":"Sending next question:","timestamp":"2025-08-16T11:20:31.467Z"}
+{"level":"info","message":"Step 2: Question answering loop","timestamp":"2025-08-16T11:20:33.092Z"}
+{"level":"info","message":"Total questions:","timestamp":"2025-08-16T11:20:33.092Z"}
+{"level":"info","message":"Current index:","timestamp":"2025-08-16T11:20:33.093Z"}
+{"level":"info","message":"Sending next question:","timestamp":"2025-08-16T11:20:33.093Z"}
+{"level":"info","message":"Step 2: Question answering loop","timestamp":"2025-08-16T11:20:35.029Z"}
+{"level":"info","message":"Total questions:","timestamp":"2025-08-16T11:20:35.029Z"}
+{"level":"info","message":"Current index:","timestamp":"2025-08-16T11:20:35.029Z"}
+{"level":"info","message":"Sending next question:","timestamp":"2025-08-16T11:20:35.030Z"}
+{"level":"info","message":"Step 2: Question answering loop","timestamp":"2025-08-16T11:20:39.927Z"}
+{"level":"info","message":"Total questions:","timestamp":"2025-08-16T11:20:39.927Z"}
+{"level":"info","message":"Current index:","timestamp":"2025-08-16T11:20:39.927Z"}
+{"level":"info","message":"Sending next question:","timestamp":"2025-08-16T11:20:39.927Z"}
+{"level":"info","message":"Step 2: Question answering loop","timestamp":"2025-08-16T11:20:42.032Z"}
+{"level":"info","message":"Total questions:","timestamp":"2025-08-16T11:20:42.033Z"}
+{"level":"info","message":"Current index:","timestamp":"2025-08-16T11:20:42.033Z"}
+{"level":"info","message":"Sending next question:","timestamp":"2025-08-16T11:20:42.033Z"}
+{"level":"info","message":"Step 2: Question answering loop","timestamp":"2025-08-16T11:20:44.652Z"}
+{"level":"info","message":"Total questions:","timestamp":"2025-08-16T11:20:44.652Z"}
+{"level":"info","message":"Current index:","timestamp":"2025-08-16T11:20:44.652Z"}
+{"level":"info","message":"Sending next question:","timestamp":"2025-08-16T11:20:44.652Z"}
+{"level":"info","message":"Step 2: Question answering loop","timestamp":"2025-08-16T11:20:46.241Z"}
+{"level":"info","message":"Total questions:","timestamp":"2025-08-16T11:20:46.241Z"}
+{"level":"info","message":"Current index:","timestamp":"2025-08-16T11:20:46.241Z"}
+{"level":"info","message":"Sending next question:","timestamp":"2025-08-16T11:20:46.241Z"}
+{"level":"info","message":"Step 2: Question answering loop","timestamp":"2025-08-16T11:20:48.555Z"}
+{"level":"info","message":"Total questions:","timestamp":"2025-08-16T11:20:48.555Z"}
+{"level":"info","message":"Current index:","timestamp":"2025-08-16T11:20:48.555Z"}
+{"level":"info","message":"Sending next question:","timestamp":"2025-08-16T11:20:48.555Z"}
+{"level":"info","message":"Step 2: Question answering loop","timestamp":"2025-08-16T11:20:50.129Z"}
+{"level":"info","message":"Total questions:","timestamp":"2025-08-16T11:20:50.129Z"}
+{"level":"info","message":"Current index:","timestamp":"2025-08-16T11:20:50.129Z"}
+{"level":"info","message":"Sending next question:","timestamp":"2025-08-16T11:20:50.129Z"}
+{"level":"info","message":"Step 2: Question answering loop","timestamp":"2025-08-16T11:20:51.893Z"}
+{"level":"info","message":"Total questions:","timestamp":"2025-08-16T11:20:51.893Z"}
+{"level":"info","message":"Current index:","timestamp":"2025-08-16T11:20:51.893Z"}
+{"level":"info","message":"Sending next question:","timestamp":"2025-08-16T11:20:51.893Z"}
+{"level":"info","message":"Step 2: Question answering loop","timestamp":"2025-08-16T11:20:54.749Z"}
+{"level":"info","message":"Total questions:","timestamp":"2025-08-16T11:20:54.749Z"}
+{"level":"info","message":"Current index:","timestamp":"2025-08-16T11:20:54.750Z"}
+{"level":"info","message":"Sending next question:","timestamp":"2025-08-16T11:20:54.750Z"}
+{"level":"info","message":"Step 2: Question answering loop","timestamp":"2025-08-16T11:20:56.650Z"}
+{"level":"info","message":"Total questions:","timestamp":"2025-08-16T11:20:56.650Z"}
+{"level":"info","message":"Current index:","timestamp":"2025-08-16T11:20:56.650Z"}
+{"level":"info","message":"Sending next question:","timestamp":"2025-08-16T11:20:56.651Z"}
+{"level":"info","message":"Step 2: Question answering loop","timestamp":"2025-08-16T11:20:58.796Z"}
+{"level":"info","message":"Total questions:","timestamp":"2025-08-16T11:20:58.796Z"}
+{"level":"info","message":"Current index:","timestamp":"2025-08-16T11:20:58.796Z"}
+{"level":"info","message":"Sending next question:","timestamp":"2025-08-16T11:20:58.797Z"}
+{"level":"info","message":"Step 2: Question answering loop","timestamp":"2025-08-16T11:21:00.402Z"}
+{"level":"info","message":"Total questions:","timestamp":"2025-08-16T11:21:00.402Z"}
+{"level":"info","message":"Current index:","timestamp":"2025-08-16T11:21:00.402Z"}
+{"level":"info","message":"Sending next question:","timestamp":"2025-08-16T11:21:00.402Z"}
+{"level":"info","message":"Step 2: Question answering loop","timestamp":"2025-08-16T11:21:01.881Z"}
+{"level":"info","message":"Total questions:","timestamp":"2025-08-16T11:21:01.881Z"}
+{"level":"info","message":"Current index:","timestamp":"2025-08-16T11:21:01.881Z"}
+{"level":"info","message":"Sending next question:","timestamp":"2025-08-16T11:21:01.881Z"}
+{"level":"info","message":"Step 2: Question answering loop","timestamp":"2025-08-16T11:21:03.366Z"}
+{"level":"info","message":"Total questions:","timestamp":"2025-08-16T11:21:03.368Z"}
+{"level":"info","message":"Current index:","timestamp":"2025-08-16T11:21:03.368Z"}
+{"level":"info","message":"Sending next question:","timestamp":"2025-08-16T11:21:03.368Z"}
+{"level":"info","message":"Step 2: Question answering loop","timestamp":"2025-08-16T11:21:08.948Z"}
+{"level":"info","message":"Total questions:","timestamp":"2025-08-16T11:21:08.948Z"}
+{"level":"info","message":"Current index:","timestamp":"2025-08-16T11:21:08.948Z"}
+{"level":"info","message":"Sending next question:","timestamp":"2025-08-16T11:21:08.948Z"}
+{"level":"info","message":"Step 2: Question answering loop","timestamp":"2025-08-16T11:21:10.572Z"}
+{"level":"info","message":"Total questions:","timestamp":"2025-08-16T11:21:10.572Z"}
+{"level":"info","message":"Current index:","timestamp":"2025-08-16T11:21:10.573Z"}
+{"level":"info","message":"Sending next question:","timestamp":"2025-08-16T11:21:10.573Z"}
+{"level":"info","message":"Step 2: Question answering loop","timestamp":"2025-08-16T11:21:12.607Z"}
+{"level":"info","message":"Total questions:","timestamp":"2025-08-16T11:21:12.610Z"}
+{"level":"info","message":"Current index:","timestamp":"2025-08-16T11:21:12.610Z"}
+{"level":"info","message":"All questions answered, showing preview","timestamp":"2025-08-16T11:21:12.610Z"}
+{"level":"info","message":"Step 3: Handle back/edit","timestamp":"2025-08-16T11:21:53.009Z"}
+{"level":"info","message":"Entering edit mode","timestamp":"2025-08-16T11:21:53.010Z"}
+{"level":"info","message":"Step 4: Handle question number input","timestamp":"2025-08-16T11:21:57.620Z"}
+{"level":"info","message":"Selected question 32: Preferred partner previous marriage status?","timestamp":"2025-08-16T11:21:57.621Z"}
+{"level":"info","message":"Step 5: Handle new answer","timestamp":"2025-08-16T11:22:10.265Z"}
+{"level":"warn","message":"No submission found for user 7020557931. Creating a new one.","timestamp":"2025-08-16T11:22:10.269Z"}
+{"level":"info","message":"New submission created with ID:","timestamp":"2025-08-16T11:22:10.309Z"}
+{"level":"info","message":"Step 3: Handle back/edit","timestamp":"2025-08-16T11:22:25.473Z"}
+{"level":"info","message":"Entering edit mode","timestamp":"2025-08-16T11:22:25.473Z"}
+{"level":"info","message":"Step 4: Handle question number input","timestamp":"2025-08-16T11:22:30.887Z"}
+{"level":"info","message":"Selected question 32: Preferred partner previous marriage status?","timestamp":"2025-08-16T11:22:30.887Z"}
+{"level":"info","message":"Step 5: Handle new answer","timestamp":"2025-08-16T11:22:35.414Z"}
+{"level":"info","message":"Updated answer for question 32 in submission 1","timestamp":"2025-08-16T11:22:35.421Z"}
+{"level":"info","message":"Step 3: Handle back/edit","timestamp":"2025-08-16T11:22:38.247Z"}
+{"level":"info","message":"Back button triggered, returning to review/new selection","timestamp":"2025-08-16T11:22:38.247Z"}
+{"level":"info","message":"Step 1: Handle review/new selection","timestamp":"2025-08-16T11:22:48.626Z"}
+{"level":"info","message":"Step 3: Handle back/edit","timestamp":"2025-08-16T11:22:58.917Z"}
+{"level":"info","message":"Back button triggered, returning to review/new selection","timestamp":"2025-08-16T11:22:58.918Z"}
+{"level":"info","message":"Step 1: Handle review/new selection","timestamp":"2025-08-16T11:23:08.111Z"}
+{"level":"error","message":"Error: Cannot read properties of undefined (reading 'id')","timestamp":"2025-08-16T11:23:50.971Z"}
+{"level":"error","message":"Error: Cannot read properties of undefined (reading 'id')","timestamp":"2025-08-16T11:25:41.483Z"}
+{"level":"error","message":"Error: Cannot read properties of undefined (reading 'id')","timestamp":"2025-08-16T11:26:47.663Z"}
+{"level":"error","message":"Error: Cannot read properties of undefined (reading 'id')","timestamp":"2025-08-16T11:30:11.530Z"}
+{"level":"error","message":"Error: Cannot read properties of undefined (reading 'id')","timestamp":"2025-08-16T11:30:15.542Z"}
+{"level":"info","message":"Step 0: List user submissions","timestamp":"2025-08-16T11:31:17.956Z"}
+{"level":"info","message":"Step 1: Show submission details","timestamp":"2025-08-16T11:31:20.947Z"}
+{"level":"info","message":"Step 2: Handle submission actions","timestamp":"2025-08-16T11:31:24.370Z"}
+{"level":"info","message":"Step 2: Handle submission actions","timestamp":"2025-08-16T11:31:26.746Z"}
+{"level":"info","message":"Step 0: User registration and initial check","timestamp":"2025-08-16T11:38:34.765Z"}
+{"level":"info","message":"User upserted: 7020557931","timestamp":"2025-08-16T11:38:34.858Z"}
+{"level":"info","message":"Sending first question:","timestamp":"2025-08-16T11:38:34.860Z"}
+{"level":"info","message":"Step 2: Question answering loop","timestamp":"2025-08-16T11:38:39.080Z"}
+{"level":"info","message":"Total questions:","timestamp":"2025-08-16T11:38:39.080Z"}
+{"level":"info","message":"Current index:","timestamp":"2025-08-16T11:38:39.080Z"}
+{"level":"info","message":"Sending next question:","timestamp":"2025-08-16T11:38:39.080Z"}
+{"level":"info","message":"Step 2: Question answering loop","timestamp":"2025-08-16T11:38:41.864Z"}
+{"level":"info","message":"Total questions:","timestamp":"2025-08-16T11:38:41.865Z"}
+{"level":"info","message":"Current index:","timestamp":"2025-08-16T11:38:41.865Z"}
+{"level":"info","message":"Sending next question:","timestamp":"2025-08-16T11:38:41.865Z"}
+{"level":"info","message":"Step 2: Question answering loop","timestamp":"2025-08-16T11:38:46.018Z"}
+{"level":"info","message":"Total questions:","timestamp":"2025-08-16T11:38:46.018Z"}
+{"level":"info","message":"Current index:","timestamp":"2025-08-16T11:38:46.019Z"}
+{"level":"info","message":"All questions answered, showing preview","timestamp":"2025-08-16T11:38:46.019Z"}
+{"level":"info","message":"Step 3: Handle back/edit","timestamp":"2025-08-16T11:38:48.628Z"}
+{"level":"info","message":"Entering edit mode","timestamp":"2025-08-16T11:38:48.628Z"}
+{"level":"info","message":"Step 4: Handle question number input","timestamp":"2025-08-16T11:38:53.246Z"}
+{"level":"info","message":"Step 4: Handle question number input","timestamp":"2025-08-16T11:39:00.215Z"}
+{"level":"info","message":"Selected question 2: Preferred partner age?","timestamp":"2025-08-16T11:39:00.216Z"}
+{"level":"info","message":"Step 5: Handle new answer","timestamp":"2025-08-16T11:39:05.422Z"}
+{"level":"warn","message":"No submission found for user 7020557931. Creating a new one.","timestamp":"2025-08-16T11:39:05.425Z"}
+{"level":"info","message":"New submission created with ID:","timestamp":"2025-08-16T11:39:05.436Z"}
+{"level":"info","message":"Step 3: Handle back/edit","timestamp":"2025-08-16T11:39:10.178Z"}
+{"level":"info","message":"Back button triggered, returning to review/new selection","timestamp":"2025-08-16T11:39:10.178Z"}
+{"level":"info","message":"Step 1: Handle review/new selection","timestamp":"2025-08-16T11:39:14.619Z"}
+{"level":"info","message":"Step 3: Handle back/edit","timestamp":"2025-08-16T11:39:23.575Z"}
+{"level":"info","message":"Checking for existing pending submission","timestamp":"2025-08-16T11:39:23.575Z"}
+{"level":"info","message":"Pending submission found:","timestamp":"2025-08-16T11:39:23.580Z"}
+{"level":"info","message":"Step 3: Handle back/edit","timestamp":"2025-08-16T11:39:32.285Z"}
+{"level":"info","message":"Checking for existing pending submission","timestamp":"2025-08-16T11:39:32.285Z"}
+{"level":"info","message":"Pending submission found:","timestamp":"2025-08-16T11:39:32.292Z"}
+{"level":"info","message":"Step 0: List user submissions","timestamp":"2025-08-16T11:39:48.438Z"}
+{"level":"info","message":"Step 1: Show submission details","timestamp":"2025-08-16T11:39:51.314Z"}
+{"level":"info","message":"Step 2: Handle submission actions","timestamp":"2025-08-16T11:39:53.936Z"}
+{"level":"info","message":"Step 3: Select question to edit","timestamp":"2025-08-16T11:40:11.173Z"}
+{"level":"info","message":"Step 4: Update answer","timestamp":"2025-08-16T11:40:23.144Z"}
+{"level":"info","message":"User 7020557931 updated submission 2","timestamp":"2025-08-16T11:40:23.150Z"}
+{"level":"info","message":"Step 2: Handle submission actions","timestamp":"2025-08-16T11:40:26.423Z"}
+{"level":"info","message":"Step 3: Select question to edit","timestamp":"2025-08-16T11:40:30.166Z"}
+{"level":"info","message":"Step 4: Update answer","timestamp":"2025-08-16T11:40:33.818Z"}
+{"level":"info","message":"User 7020557931 updated submission 2","timestamp":"2025-08-16T11:40:33.823Z"}
+{"level":"info","message":"Step 2: Handle submission actions","timestamp":"2025-08-16T11:40:36.484Z"}

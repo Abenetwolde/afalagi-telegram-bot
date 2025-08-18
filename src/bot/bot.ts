@@ -13,11 +13,11 @@ import { restartCommand } from './commands/restart.command';
 import { cancelCommand } from './commands/cancel.command';
 import { userScene } from './scenes/userScene';
 import { adminScene } from './scenes/admin.scene';
-
+import { APIGateway } from 'telegraf/src/platforms/aws-lambda';
 const bot = new Telegraf(BOT_TOKEN);
 bot.use(session());
 // bot.use(rateLimitMiddleware);
-bot.use(errorHandlerMiddleware);
+// bot.use(errorHandlerMiddleware);
 async function handleStartOrCancel(ctx: any) {
   const isCancel = /cancel/i.test(ctx.message?.text || ctx.update?.message?.text || ctx.updateType === 'callback_query' && ctx.update?.callback_query?.data === 'cancel');
   if (ctx.scene.current) {
@@ -78,6 +78,7 @@ stage.hears('My Applications 📋', async (ctx: any) => {
     console.log(`Exiting current scene: ${ctx.scene.current.id}`);
     await ctx.scene.leave();
   }
+
   await ctx.scene.enter('user');
 });
 

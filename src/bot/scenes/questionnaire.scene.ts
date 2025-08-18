@@ -1,29 +1,34 @@
 import { Scenes, Markup } from 'telegraf';
-import { Submission } from '../models/submission.model';
-import { User } from '../models/user.model';
-import { Question } from '../models/question.model';
+import { PrismaClient } from '@prisma/client';
 import { logger } from '../services/logger.service';
+
+// It is a best practice to have a single PrismaClient instance for your application.
+// This instance should be created and exported in a separate file (e.g., ../services/prisma.ts).
+// For this example, we'll create it here.
+const prisma = new PrismaClient();
 
 // Interface for wizard state
 interface QuestionnaireState {
   questions: any[];
-  answers: { questionId: string; answer: string }[];
+  answers: { questionId: number; answer: string }[];
   currentQuestion: number;
   editing?: boolean;
   editingQuestion?: number;
-  reviewing?: boolean; // New state to track review mode
+  editingQuestionIndex?: number;
+  reviewing?: boolean;
 }
 
 // Helper function to format answers for display with numbering and italic answers
+// Note: This now uses the 'included' question object from Prisma's `include`
 const formatAnswers = (answers: any[], questions: any[]): string => {
   return answers
     .filter(a => {
-      const question = questions.find(q => q._id.toString() === a.questionId.toString());
+      const question = questions.find(q => q.id === a.questionId);
       return question && !question.confidential;
     })
     .map((a, index) => {
-      const question = questions.find(q => q._id.toString() === a.questionId.toString());
-      return `${index + 1}. ${question.text}\n_${a.answer}_`;
+      const question = questions.find(q => q.id === a.questionId);
+      return `${index + 1}. ${question?.text || 'Unknown question'}\n_${a.answer || 'No answer provided'}_`;
     })
     .join('\n\n');
 };
@@ -33,6 +38,7 @@ const createSubmissionKeyboard = () => Markup.inlineKeyboard([
   Markup.button.callback('Back', 'back'),
   Markup.button.callback('Edit', 'edit'),
 ]);
+
 // Helper function to create back keyboard
 const createBackKeyboard = () => Markup.keyboard(['Back']).oneTime();
 
@@ -40,31 +46,42 @@ export const questionnaireScene = new Scenes.WizardScene<any>(
   'questionnaire',
   // Step 0: User registration and initial check for previous submission
   async (ctx) => {
-    console.log('Step 0: User registration and initial check');
+    logger.info('Step 0: User registration and initial check');
     try {
-      let user = await User.findOne({ telegramId: ctx.from!.id });
-      
-      console.log('User found:', user ? user.telegramId : 'No user found');
-      // Register new user if not exists
-      if (!user) {
-        user = new User({
+      // Find a user by their unique telegramId, or create one if they don't exist
+      let user = await prisma.user.upsert({
+        where: { telegramId: ctx.from!.id },
+        update: {},
+        create: {
           telegramId: ctx.from!.id,
           username: ctx.from?.username || '',
-          isAdmin: false, // Default to false, can be updated later
-          createdAt: new Date(),
-        });
-        await user.save();
-        logger.info(`New user registered: ${ctx.from!.id}`);
-      }
+        },
+      });
 
-      ctx.wizard.state.questions = await Question.find().sort();
+      logger.info(`User upserted: ${user.telegramId}`);
+
+      // Fetch all questions and store them in the wizard state
+      ctx.wizard.state.questions = await prisma.question.findMany({
+        orderBy: { id: 'asc' }, // Ensure a consistent order for questions
+      });
       ctx.wizard.state.answers = [];
       ctx.wizard.state.currentQuestion = 0;
       ctx.wizard.state.editing = false;
       ctx.wizard.state.reviewing = false;
 
+      // Check for a previous submission using the `lastSubmissionId` relation
       if (user.lastSubmissionId) {
-        const lastSubmission = await Submission.findById(user.lastSubmissionId).populate('answers.questionId');
+        const lastSubmission = await prisma.submission.findUnique({
+          where: { id: user.lastSubmissionId },
+          include: {
+            answers: {
+              include: {
+                question: true,
+              },
+            },
+          },
+        });
+
         if (lastSubmission) {
           await ctx.reply(
             'You have a previous submission. Would you like to review/edit it or start a new one?',
@@ -77,9 +94,9 @@ export const questionnaireScene = new Scenes.WizardScene<any>(
         }
       }
 
-      // Send first question only if no previous submission
+      // If no previous submission, proceed to the first question
       if (ctx.wizard.state.questions.length > 0) {
-        console.log('Sending first question:', ctx.wizard.state.questions[0].text);
+        logger.info('Sending first question:', ctx.wizard.state.questions[0].text);
         await ctx.reply(
           ctx.wizard.state.questions[0].text,
           Markup.keyboard(['Skip']).oneTime()
@@ -98,26 +115,36 @@ export const questionnaireScene = new Scenes.WizardScene<any>(
   },
   // Step 1: Handle review/new selection
   async (ctx) => {
-    console.log('Step 1: Handle review/new selection');
+    logger.info('Step 1: Handle review/new selection');
     try {
       if (ctx.callbackQuery && 'data' in ctx.callbackQuery) {
         if (ctx.callbackQuery.data === 'review') {
-          const user = await User.findOne({ telegramId: ctx.from!.id });
-          const lastSubmission = await Submission.findById(user!.lastSubmissionId).populate('answers.questionId');
-          
+          const user = await prisma.user.findUnique({ where: { telegramId: ctx.from!.id } });
+          const lastSubmission = await prisma.submission.findUnique({
+            where: { id: user!.lastSubmissionId! },
+            include: {
+              answers: {
+                include: {
+                  question: true,
+                },
+              },
+            },
+          });
+
           if (lastSubmission) {
+            // Re-populate answers into the wizard state
             ctx.wizard.state.answers = lastSubmission.answers.map((a: any) => ({
-              questionId: a.questionId?._id.toString(),
-              answer: a.answer
+              questionId: a.questionId,
+              answer: a.answer,
             }));
-            ctx.wizard.state.reviewing = true; // Indicate review mode
-            
+            ctx.wizard.state.reviewing = true;
+
             await ctx.reply(
-              'Your previous answers:\n' + formatAnswers(ctx.wizard.state.answers, ctx.wizard.state.questions) + 
+              'Your previous answers:\n' + formatAnswers(ctx.wizard.state.answers, ctx.wizard.state.questions) +
               '\n\nChoose an option:',
               { reply_markup: createSubmissionKeyboard().reply_markup, parse_mode: 'Markdown' }
             );
-            return ctx.wizard.selectStep(3); // Skip to submit/edit step
+            return ctx.wizard.selectStep(3);
           }
         } else if (ctx.callbackQuery.data === 'new') {
           ctx.wizard.state.answers = [];
@@ -125,7 +152,7 @@ export const questionnaireScene = new Scenes.WizardScene<any>(
           ctx.wizard.state.editing = false;
           ctx.wizard.state.reviewing = false;
           if (ctx.wizard.state.questions.length > 0) {
-            console.log('Sending first question for new submission:', ctx.wizard.state.questions[0].text);
+            logger.info('Sending first question for new submission:', ctx.wizard.state.questions[0].text);
             await ctx.reply(
               ctx.wizard.state.questions[0].text,
               Markup.keyboard(['Skip']).oneTime()
@@ -146,11 +173,11 @@ export const questionnaireScene = new Scenes.WizardScene<any>(
   },
   // Step 2: Question answering loop
   async (ctx) => {
-    console.log('Step 2: Question answering loop');
+    logger.info('Step 2: Question answering loop');
     try {
       // If in editing or reviewing mode, skip to appropriate step
       if (ctx.wizard.state.editing) {
-        console.log('Redirecting to edit step');
+        logger.info('Redirecting to edit step');
         await ctx.reply(
           'Your answers:\n' +
           formatAnswers(ctx.wizard.state.answers, ctx.wizard.state.questions) +
@@ -160,7 +187,7 @@ export const questionnaireScene = new Scenes.WizardScene<any>(
         return ctx.wizard.selectStep(4);
       }
       if (ctx.wizard.state.reviewing) {
-        console.log('Redirecting to submit/edit step');
+        logger.info('Redirecting to submit/edit step');
         await ctx.reply(
           'Your answers:\n' +
           formatAnswers(ctx.wizard.state.answers, ctx.wizard.state.questions) +
@@ -171,11 +198,10 @@ export const questionnaireScene = new Scenes.WizardScene<any>(
       }
 
       const questions = ctx.wizard.state.questions;
-      console.log('Total questions:', questions.length);
+      logger.info('Total questions:', questions.length);
       const currentIndex = ctx.wizard.state.currentQuestion;
-      console.log('Current index:', currentIndex);
+      logger.info('Current index:', currentIndex);
 
-      // Ensure questions exist
       if (!questions || questions.length === 0) {
         logger.error('No questions available in state');
         await ctx.reply('No questions available. Please try again later.');
@@ -184,34 +210,28 @@ export const questionnaireScene = new Scenes.WizardScene<any>(
 
       // Process answer for the previous question (if any)
       if (currentIndex > 0 && ctx.message && 'text' in ctx.message) {
-        if (ctx.message.text !== 'Skip') {
-          console.log('Saving answer for question:', questions[currentIndex - 1].text);
-          ctx.wizard.state.answers[currentIndex - 1] = {
-            questionId: questions[currentIndex - 1]._id.toString(),
-            answer: ctx.message.text,
-          };
-        } else {
-          console.log('Skipping question:', questions[currentIndex - 1].text);
-          ctx.wizard.state.answers[currentIndex - 1] = {
-            questionId: questions[currentIndex - 1]._id.toString(),
-            answer: 'Skipped',
-          };
-        }
+        const questionId = questions[currentIndex - 1].id;
+        const answerText = ctx.message.text !== 'Skip' ? ctx.message.text : 'Skipped';
+
+        ctx.wizard.state.answers[currentIndex - 1] = {
+          questionId,
+          answer: answerText,
+        };
       }
 
       // Check if there are more questions
       if (currentIndex < questions.length) {
-        console.log('Sending next question:', questions[currentIndex].text);
+        logger.info('Sending next question:', questions[currentIndex].text);
         await ctx.reply(
           questions[currentIndex].text,
           Markup.keyboard(['Skip']).oneTime()
         );
         ctx.wizard.state.currentQuestion = currentIndex + 1;
-        return ctx.wizard.selectStep(2); // Stay in the question loop
+        return ctx.wizard.selectStep(2);
       }
 
       // Show preview when all questions are answered
-      console.log('All questions answered, showing preview');
+      logger.info('All questions answered, showing preview');
       await ctx.reply(
         'Preview your answers:\n' +
         formatAnswers(ctx.wizard.state.answers, ctx.wizard.state.questions) +
@@ -225,14 +245,13 @@ export const questionnaireScene = new Scenes.WizardScene<any>(
       return ctx.scene.leave();
     }
   },
-  // Step 3: Handle submit/edit
-// Step 3: Handle back/edit (unchanged)
-async (ctx) => {
-    console.log('Step 3: Handle back/edit');
+  // Step 3: Handle back/edit
+  async (ctx) => {
+    logger.info('Step 3: Handle back/edit');
     try {
       if (ctx.callbackQuery && 'data' in ctx.callbackQuery) {
         if (ctx.callbackQuery.data === 'back') {
-          console.log('Back button triggered, returning to review/new selection');
+          logger.info('Back button triggered, returning to review/new selection');
           await ctx.reply(
             'You have a previous submission. Would you like to review/edit it or start a new one?',
             Markup.inlineKeyboard([
@@ -240,12 +259,12 @@ async (ctx) => {
               Markup.button.callback('Start New', 'new'),
             ])
           );
-          return ctx.wizard.selectStep(1); // Return to Step 1
+          return ctx.wizard.selectStep(1);
         }
         if (ctx.callbackQuery.data === 'edit') {
           ctx.wizard.state.editing = true;
           ctx.wizard.state.reviewing = false;
-          console.log('Entering edit mode');
+          logger.info('Entering edit mode');
           await ctx.reply(
             'Your answers:\n' +
             formatAnswers(ctx.wizard.state.answers, ctx.wizard.state.questions) +
@@ -255,15 +274,16 @@ async (ctx) => {
           return ctx.wizard.selectStep(4);
         }
       }
+
       // Check for pending submission before showing keyboard
-      console.log('Checking for existing pending submission');
-      const existingSubmission = await Submission.findOne({
-        userId: ctx.from!.id,
-        status: 'pending',
+      logger.info('Checking for existing pending submission');
+      const user = await prisma.user.findUnique({ where: { telegramId: ctx.from!.id } });
+      const existingSubmission = await prisma.submission.findFirst({
+        where: { userId: user!.id, status: 'pending' },
       });
 
       if (existingSubmission) {
-        console.log('Pending submission found:', existingSubmission._id);
+        logger.info('Pending submission found:', existingSubmission.id);
         await ctx.reply(
           'You already have a pending submission. Please wait for review or edit your existing submission.',
           {
@@ -272,13 +292,7 @@ async (ctx) => {
             ]).reply_markup,
           }
         );
-        // Register action handler for View/Edit button
-        ctx.scene.session.actionHandler = ctx.scene.action('view_submission', async (ctx:any) => {
-          console.log('Inline button: View/Edit Submission triggered');
-          await ctx.scene.leave();
-          await ctx.scene.enter('user');
-        });
-        return ctx.wizard.selectStep(3); // Stay in Step 3
+        return ctx.wizard.selectStep(3);
       }
 
       // If no valid callback and no pending submission, show back/edit keyboard
@@ -293,10 +307,9 @@ async (ctx) => {
       return ctx.scene.leave();
     }
   },
-
-// Step 4: Handle question number input and answer update
-async (ctx) => {
-    console.log('Step 4: Handle question number input');
+  // Step 4: Handle question number input and answer update
+  async (ctx) => {
+    logger.info('Step 4: Handle question number input');
     try {
       if (!ctx.message || !('text' in ctx.message)) {
         await ctx.reply('Please enter the number of the question you want to edit:');
@@ -305,9 +318,8 @@ async (ctx) => {
 
       const input = ctx.message.text.trim();
       const questionNumber = parseInt(input, 10);
-      const questionIndex = questionNumber - 1; // Convert to 0-based index
+      const questionIndex = questionNumber - 1;
 
-      // Validate question number
       if (isNaN(questionNumber) || questionIndex < 0 || questionIndex >= ctx.wizard.state.questions.length) {
         await ctx.reply(
           'Invalid question number. Please enter a valid number:\n' +
@@ -317,17 +329,14 @@ async (ctx) => {
         return ctx.wizard.selectStep(4);
       }
 
-      // Store the selected question index
       ctx.wizard.state.editingQuestionIndex = questionIndex;
-      console.log(`Selected question ${questionNumber}: ${ctx.wizard.state.questions[questionIndex].text}`);
+      logger.info(`Selected question ${questionNumber}: ${ctx.wizard.state.questions[questionIndex].text}`);
 
-      // Prompt for new answer
       await ctx.reply(
         `Editing question ${questionNumber}: ${ctx.wizard.state.questions[questionIndex].text}\nPlease enter your new answer:`,
         { reply_markup: Markup.removeKeyboard().reply_markup }
       );
 
-      // Move to Step 5 to handle the new answer
       return ctx.wizard.selectStep(5);
     } catch (error) {
       logger.error('Error in question number input step:', error);
@@ -335,10 +344,9 @@ async (ctx) => {
       return ctx.scene.leave();
     }
   },
-
-// Step 5: Handle new answer and update submission
-async (ctx) => {
-    console.log('Step 5: Handle new answer');
+  // Step 5: Handle new answer and update submission
+  async (ctx) => {
+    logger.info('Step 5: Handle new answer');
     try {
       if (!ctx.message || !('text' in ctx.message)) {
         await ctx.reply('Please enter your new answer:');
@@ -347,56 +355,72 @@ async (ctx) => {
 
       const newAnswer = ctx.message.text.trim();
       const questionIndex = ctx.wizard.state.editingQuestionIndex;
+      const questionId = ctx.wizard.state.questions[questionIndex].id;
 
       // Update answer in wizard state
       const answer = ctx.wizard.state.answers.find(
-        (a: any) => a.questionId === ctx.wizard.state.questions[questionIndex]._id.toString()
+        (a: any) => a.questionId === questionId
       );
       if (answer) {
         answer.answer = newAnswer;
       } else {
         ctx.wizard.state.answers.push({
-          questionId: ctx.wizard.state.questions[questionIndex]._id.toString(),
+          questionId,
           answer: newAnswer,
         });
       }
 
-      // Update Submission in database
-      const user = await User.findOne({ telegramId: ctx.from!.id });
-      if (user && user.lastSubmissionId) {
-        await Submission.updateOne(
-          { _id: user.lastSubmissionId, userId: ctx.from!.id },
-          {
-            $set: {
-              'answers.$[elem].answer': newAnswer,
-              updatedAt: new Date(),
-            },
-          },
-          {
-            arrayFilters: [{ 'elem.questionId': ctx.wizard.state.questions[questionIndex]._id }],
-          }
-        );
-        console.log(`Updated answer for question ${questionIndex + 1} in submission ${user.lastSubmissionId}`);
-      } else {
-        logger.warn(`No submission found for user ${ctx.from!.id}`);
-        await ctx.reply('No submission found to update. Starting a new submission.');
+      // Find the user to get their submission ID
+      const user = await prisma.user.findUnique({ where: { telegramId: ctx.from!.id } });
 
-        // Create a new submission as fallback
-        const submission = new Submission({
-          userId: ctx.from!.id,
-          answers: ctx.wizard.state.answers.filter((a: any) => a.answer && a.questionId),
-          status: 'pending',
+      if (user && user.lastSubmissionId) {
+        // Find and update the specific answer record in the Answer table
+        await prisma.answer.updateMany({
+          where: {
+            submissionId: user.lastSubmissionId,
+            questionId,
+          },
+          data: {
+            answer: newAnswer,
+          },
         });
-        await submission.save();
-        await User.updateOne(
-          { telegramId: ctx.from!.id },
-          { $set: { lastSubmissionId: submission._id } },
-          { upsert: true }
-        );
-        console.log('New submission created with ID:', submission._id);
+
+        // Update the submission's updatedAt field
+        await prisma.submission.update({
+          where: { id: user.lastSubmissionId },
+          data: { updatedAt: new Date() },
+        });
+
+        logger.info(`Updated answer for question ${questionIndex + 1} in submission ${user.lastSubmissionId}`);
+      } else {
+        logger.warn(`No submission found for user ${ctx.from!.id}. Creating a new one.`);
+
+        // Create a new submission as a fallback
+        const submission = await prisma.submission.create({
+          data: {
+            user: { connect: { telegramId: ctx.from!.id } },
+            answers: {
+              create: ctx.wizard.state.answers.map((a: any) => ({
+                answer: a.answer,
+                question: { connect: { id: a.questionId } },
+              })),
+            },
+            status: 'pending',
+          },
+          include: {
+            answers: true
+          }
+        });
+
+        // Update the user's lastSubmissionId
+        await prisma.user.update({
+          where: { telegramId: ctx.from!.id },
+          data: { lastSubmission: { connect: { id: submission.id } } },
+        });
+
+        logger.info('New submission created with ID:', submission.id);
       }
 
-      // Return to Step 3 to show updated answers
       await ctx.reply(
         'Answer updated! Your answers:\n' +
         formatAnswers(ctx.wizard.state.answers, ctx.wizard.state.questions) +
@@ -409,5 +433,5 @@ async (ctx) => {
       await ctx.reply('An error occurred. Please try again.');
       return ctx.scene.leave();
     }
-  },
+  }
 );

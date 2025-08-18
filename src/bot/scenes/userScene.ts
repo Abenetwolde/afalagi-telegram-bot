@@ -1,16 +1,19 @@
 import { Scenes, Markup } from 'telegraf';
-import { Submission } from '../models/submission.model';
-import { User } from '../models/user.model';
-import { Question } from '../models/question.model';
+import { PrismaClient } from '@prisma/client';
 import { logger } from '../services/logger.service';
+
+// It is best practice to have a single PrismaClient instance for your application.
+// This instance should be created and exported in a separate file (e.g., ../services/prisma.ts)
+// For this example, we'll create it here.
+const prisma = new PrismaClient();
 
 // Interface for wizard state
 interface UserSceneState {
   submissions: any[];
-  selectedSubmissionId?: string;
+  selectedSubmissionId?: number; // Changed to number for Prisma IDs
   editing?: boolean;
   editingQuestion?: number;
-  answers?: { questionId: string; answer: string }[];
+  answers?: { questionId: number; answer: string }[];
   questions?: any[];
 }
 
@@ -21,56 +24,37 @@ const formatSubmissionList = (submissions: any[]): string => {
   }
   return submissions
     .map((s, index) => {
-      const date = new Date(s.createdAt).toLocaleDateString();
-      return `${index + 1}. Submission ID: ${s._id}\nStatus: ${s.status}\nCreated: ${date}`;
+      const date = s.createdAt.toLocaleDateString();
+      return `${index + 1}. Submission ID: ${s.id}\nStatus: ${s.status}\nCreated: ${date}`;
     })
     .join('\n\n');
 };
 
 // Helper function to format submission details
+// We now expect 'answers' to have an 'included' question object
 const formatSubmissionDetails = (submission: any, questions: any[]): string => {
-  console.log('Formatting submission details for:', submission._id);
-  console.log('Submission answers:', JSON.stringify(submission.answers, null, 2));
-  console.log('Questions available:', JSON.stringify(questions, null, 2));
-
   if (!submission.answers || submission.answers.length === 0) {
-    return `Submission ID: ${submission._id}\nStatus: ${submission.status}\nCreated: ${new Date(submission.createdAt).toLocaleDateString()}\n\nAnswers: No answers available.`;
+    return `Submission ID: ${submission.id}\nStatus: ${submission.status}\nCreated: ${submission.createdAt.toLocaleDateString()}\n\nAnswers: No answers available.`;
   }
 
   const answers = submission.answers
     .filter((a: any) => {
-      if (!a.questionId) {
-        console.log('Skipping answer with missing questionId:', JSON.stringify(a, null, 2));
-        return false;
-      }
-      // Handle both populated (a.questionId._id) and non-populated (a.questionId as string) cases
-      const questionIdStr = a.questionId._id ? a.questionId._id.toString() : a.questionId.toString();
-      const question = questions.find(q => {
-        const qIdStr = q._id.toString();
-        console.log(`Comparing questionId: ${qIdStr} with answer questionId: ${questionIdStr}`);
-        return qIdStr === questionIdStr;
-      });
-      if (!question) {
-        console.log('No matching question found for answer with questionId:', questionIdStr, JSON.stringify(a, null, 2));
-        return false;
-      }
-      return !question.confidential;
+      // Access the included question object
+      return a.question && !a.question.confidential;
     })
     .map((a: any, index: number) => {
-      const questionIdStr = a.questionId._id ? a.questionId._id.toString() : a.questionId.toString();
-      const question = questions.find(q => q._id.toString() === questionIdStr);
-      return `${index + 1}. ${question?.text || 'Unknown question'}\n_${a.answer || 'No answer provided'}_`;
+      // Access the included question text directly
+      return `${index + 1}. ${a.question.text || 'Unknown question'}\n_${a.answer || 'No answer provided'}_`;
     })
     .join('\n\n');
 
-  console.log('Formatted answers:', answers || 'No valid answers found.');
-  return `Submission ID: ${submission._id}\nStatus: ${submission.status}\nCreated: ${new Date(submission.createdAt).toLocaleDateString()}\n\nAnswers:\n${answers || 'No valid answers found.'}`;
+  return `Submission ID: ${submission.id}\nStatus: ${submission.status}\nCreated: ${submission.createdAt.toLocaleDateString()}\n\nAnswers:\n${answers || 'No valid answers found.'}`;
 };
 
 // Helper function to create submission selection keyboard
 const createSubmissionSelectionKeyboard = (submissions: any[]) => {
   const buttons = submissions.map((s, index) =>
-    Markup.button.callback(`Submission ${index + 1} (${s.status})`, `select_${s._id}`)
+    Markup.button.callback(`Submission ${index + 1} (${s.status})`, `select_${s.id}`)
   );
   return Markup.inlineKeyboard(buttons, { columns: 1 });
 };
@@ -95,17 +79,33 @@ export const userScene = new Scenes.WizardScene<any>(
   'user',
   // Step 0: List all submissions
   async (ctx) => {
-    console.log('Step 0: List user submissions');
+    console.log("userid==================", ctx.from.id)
+    logger.info('Step 0: List user submissions');
     try {
-      const user = await User.findOne({ telegramId: ctx.from!.id });
+
+      // Find a user by their unique telegramId
+      const user = await prisma.user.findUnique({
+        where: { telegramId: ctx.from!.id },
+      });
+console.log("user", user)
       if (!user) {
         await ctx.reply('You are not registered. Please start with /start.');
         return ctx.scene.leave();
       }
 
-      const submissions = await Submission.find({ userId: ctx.from!.id })
-        .populate('answers.questionId')
-        .sort({ createdAt: -1 });
+      // Find all submissions for the user and include their answers and the related question
+      const submissions = await prisma.submission.findMany({
+        where: { userId: user.id },
+        orderBy: { createdAt: 'desc' },
+        include: {
+          answers: {
+            include: {
+              question: true,
+            },
+          },
+        },
+      });
+
       ctx.wizard.state.submissions = submissions;
 
       if (submissions.length === 0) {
@@ -126,20 +126,32 @@ export const userScene = new Scenes.WizardScene<any>(
   },
   // Step 1: Show submission details and actions
   async (ctx) => {
-    console.log('Step 1: Show submission details');
+    logger.info('Step 1: Show submission details');
     try {
       if (ctx.callbackQuery && 'data' in ctx.callbackQuery) {
         const data = ctx.callbackQuery.data;
         if (data.startsWith('select_')) {
-          const submissionId = data.replace('select_', '');
-          const submission = await Submission.findById(submissionId).populate('answers.questionId');
+          const submissionId = parseInt(data.replace('select_', ''), 10);
+          
+          // Find the submission by its unique ID and include nested answers and questions
+          const submission = await prisma.submission.findUnique({
+            where: { id: submissionId },
+            include: {
+              answers: {
+                include: {
+                  question: true,
+                },
+              },
+            },
+          });
+
           if (!submission) {
             await ctx.reply('Submission not found.');
             return ctx.scene.leave();
           }
 
           ctx.wizard.state.selectedSubmissionId = submissionId;
-          ctx.wizard.state.questions = await Question.find();
+          ctx.wizard.state.questions = await prisma.question.findMany(); // Fetch all questions
           ctx.wizard.state.editing = false;
 
           if (submission.status === 'pending') {
@@ -166,12 +178,21 @@ export const userScene = new Scenes.WizardScene<any>(
   },
   // Step 2: Handle actions (cancel, edit, back)
   async (ctx) => {
-    console.log('Step 2: Handle submission actions');
+    logger.info('Step 2: Handle submission actions');
     try {
       if (ctx.callbackQuery && 'data' in ctx.callbackQuery) {
         const data = ctx.callbackQuery.data;
         const submissionId = ctx.wizard.state.selectedSubmissionId;
-        const submission = await Submission.findById(submissionId).populate('answers.questionId');
+        const submission = await prisma.submission.findUnique({
+          where: { id: submissionId },
+          include: {
+            answers: {
+              include: {
+                question: true,
+              },
+            },
+          },
+        });
 
         if (!submission) {
           await ctx.reply('Submission not found.');
@@ -195,10 +216,16 @@ export const userScene = new Scenes.WizardScene<any>(
         }
 
         if (data === 'confirm_cancel' && submission.status === 'pending') {
-          await Submission.deleteOne({ _id: submissionId });
-          const user = await User.findOne({ telegramId: ctx.from!.id });
-          if (user && user.lastSubmissionId?.toString() === submissionId) {
-            await User.updateOne({ telegramId: ctx.from!.id }, { $unset: { lastSubmissionId: '' } });
+          // Delete the submission
+          await prisma.submission.delete({ where: { id: submissionId } });
+          
+          const user = await prisma.user.findUnique({ where: { telegramId: ctx.from!.id } });
+          if (user && user.lastSubmissionId === submissionId) {
+            // Unset the lastSubmissionId by setting it to null
+            await prisma.user.update({
+              where: { telegramId: ctx.from!.id },
+              data: { lastSubmissionId: null },
+            });
           }
           logger.info(`User ${ctx.from!.id} canceled submission ${submissionId}`);
           await ctx.reply('Submission canceled successfully.');
@@ -207,8 +234,9 @@ export const userScene = new Scenes.WizardScene<any>(
 
         if (data === 'edit' && submission.status === 'pending') {
           ctx.wizard.state.editing = true;
+          // Store answers with their question IDs as numbers
           ctx.wizard.state.answers = submission.answers.map((a: any) => ({
-            questionId: a.questionId?._id.toString(),
+            questionId: a.questionId,
             answer: a.answer
           }));
           await ctx.reply(
@@ -231,10 +259,9 @@ export const userScene = new Scenes.WizardScene<any>(
   },
   // Step 3: Select question to edit
   async (ctx) => {
-    console.log('Step 3: Select question to edit');
+    logger.info('Step 3: Select question to edit');
     try {
       if (!ctx.wizard.state.editing) {
-        console.log('User not in editing mode');
         await ctx.reply(
           'Please click "Edit" to modify your answers.',
           { reply_markup: createActionKeyboard().reply_markup, parse_mode: 'Markdown' }
@@ -244,9 +271,11 @@ export const userScene = new Scenes.WizardScene<any>(
 
       if (ctx.message && 'text' in ctx.message) {
         if (ctx.message.text === 'Back') {
-          console.log('User clicked Back');
           ctx.wizard.state.editing = false;
-          const submission = await Submission.findById(ctx.wizard.state.selectedSubmissionId).populate('answers.questionId');
+          const submission = await prisma.submission.findUnique({
+            where: { id: ctx.wizard.state.selectedSubmissionId },
+            include: { answers: { include: { question: true } } },
+          });
           if (submission) {
             await ctx.reply(
               formatSubmissionDetails(submission, ctx.wizard.state.questions) + '\n\nChoose an action:',
@@ -256,24 +285,18 @@ export const userScene = new Scenes.WizardScene<any>(
           return ctx.wizard.selectStep(2);
         }
 
-        const questionNumber = parseInt(ctx.message.text) - 1; // Convert to 0-based index
+        const questionNumber = parseInt(ctx.message.text, 10) - 1; // Convert to 0-based index
         if (questionNumber >= 0 && questionNumber < ctx.wizard.state.questions.length) {
           ctx.wizard.state.editingQuestion = questionNumber;
-          console.log('Selected question for editing:', ctx.wizard.state.questions[questionNumber].text);
           await ctx.reply(
             ctx.wizard.state.questions[questionNumber].text,
             createBackKeyboard()
           );
           return ctx.wizard.selectStep(4);
         } else {
-          console.log('Invalid question number entered:', ctx.message.text);
           await ctx.reply(
-            'Invalid question number. Please enter a valid number:\n' +
-            formatSubmissionDetails(
-              { _id: ctx.wizard.state.selectedSubmissionId, answers: ctx.wizard.state.answers, status: 'pending', createdAt: new Date() },
-              ctx.wizard.state.questions
-            ),
-            { reply_markup: Markup.removeKeyboard().reply_markup, parse_mode: 'Markdown' }
+            'Invalid question number. Please enter a valid number.',
+            { reply_markup: Markup.removeKeyboard().reply_markup }
           );
           return ctx.wizard.selectStep(3); // Stay in this step for valid input
         }
@@ -281,7 +304,7 @@ export const userScene = new Scenes.WizardScene<any>(
 
       await ctx.reply(
         'Please enter the number of the question to edit.',
-        { reply_markup: Markup.removeKeyboard().reply_markup, parse_mode: 'Markdown' }
+        { reply_markup: Markup.removeKeyboard().reply_markup }
       );
       return ctx.wizard.selectStep(3);
     } catch (error) {
@@ -292,13 +315,15 @@ export const userScene = new Scenes.WizardScene<any>(
   },
   // Step 4: Update answer
   async (ctx) => {
-    console.log('Step 4: Update answer');
+    logger.info('Step 4: Update answer');
     try {
       if (ctx.message && 'text' in ctx.message) {
         if (ctx.message.text === 'Back') {
-          console.log('User clicked Back');
           ctx.wizard.state.editing = false;
-          const submission = await Submission.findById(ctx.wizard.state.selectedSubmissionId).populate('answers.questionId');
+          const submission = await prisma.submission.findUnique({
+            where: { id: ctx.wizard.state.selectedSubmissionId },
+            include: { answers: { include: { question: true } } },
+          });
           if (submission) {
             await ctx.reply(
               formatSubmissionDetails(submission, ctx.wizard.state.questions) + '\n\nChoose an action:',
@@ -308,31 +333,35 @@ export const userScene = new Scenes.WizardScene<any>(
           return ctx.wizard.selectStep(2);
         }
 
-        const { editingQuestion, questions, answers, selectedSubmissionId } = ctx.wizard.state;
-        answers[editingQuestion] = {
-          questionId: questions[editingQuestion]._id.toString(),
-          answer: ctx.message.text,
-        };
+        const { editingQuestion, questions, selectedSubmissionId } = ctx.wizard.state;
+        const newAnswerText = ctx.message.text;
+        const questionToEditId = questions[editingQuestion].id;
 
-        // Update the existing submission
-        await Submission.updateOne(
-          { _id: selectedSubmissionId },
-          {
-            $set: {
-              answers: answers.map((a: any) => ({
-                questionId: a.questionId,
-                answer: a.answer
-              })),
-              updatedAt: new Date()
-            }
-          }
-        );
+        // Find and update the specific answer record in the Answer table
+        const updatedAnswer = await prisma.answer.updateMany({
+          where: {
+            submissionId: selectedSubmissionId,
+            questionId: questionToEditId,
+          },
+          data: {
+            answer: newAnswerText,
+          },
+        });
+        
+        // Find and update the submission's updatedAt field
+        await prisma.submission.update({
+          where: { id: selectedSubmissionId },
+          data: { updatedAt: new Date() },
+        });
 
-        console.log('Submission updated with ID:', selectedSubmissionId);
         logger.info(`User ${ctx.from!.id} updated submission ${selectedSubmissionId}`);
 
         // Fetch the updated submission for display
-        const updatedSubmission = await Submission.findById(selectedSubmissionId).populate('answers.questionId');
+        const updatedSubmission = await prisma.submission.findUnique({
+          where: { id: selectedSubmissionId },
+          include: { answers: { include: { question: true } } },
+        });
+
         if (updatedSubmission) {
           await ctx.reply(
             'Answer updated!\n\nUpdated answers:\n' +

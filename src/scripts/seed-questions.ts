@@ -1,8 +1,18 @@
-import mongoose from 'mongoose';
-import { Question } from '../bot/models/question.model';
-import { logger } from '../bot/services/logger.service';
-import { connectDB } from '../bot/services/database.service';
-import { MONGODB_URI } from '../bot/config/config';
+const { PrismaClient } = require('@prisma/client');
+
+// const { logger } = require('../../../bot/services/logger.service');
+const prisma = new PrismaClient();
+
+ const connectDB = async () => {
+  try {
+    await prisma.$connect();
+    console.log("Connected to PostgreSQL via Prisma");
+  } catch (err) {
+    console.error("DB connection error:", err);
+    process.exit(1);
+  }
+};
+
 
 const questions = [
     { key: 'name', text: 'Please enter your name', confidential: false, category: 'personal' },
@@ -27,8 +37,8 @@ const questions = [
     // { key: 'desiredResidence', text: 'Where do you want to live?', confidential: false, category: 'personal' },
     // { key: 'education', text: 'What is your education level?', confidential: false, category: 'personal' },
     // { key: 'partnerPreferences', text: 'What are you looking for in a partner?', confidential: false, category: 'personal' },
-    // { key: 'partnerAge', text: 'Preferred partner age?', confidential: false, category: 'partner' },
-    { key: 'partnerSkinColor', text: 'Preferred partner skin color?', confidential: false, category: 'partner' },
+    { key: 'partnerAge', text: 'Preferred partner age?', confidential: false, category: 'partner' },
+    // { key: 'partnerSkinColor', text: 'Preferred partner skin color?', confidential: false, category: 'partner' },
     // { key: 'partnerAppearance', text: 'Preferred partner appearance?', confidential: false, category: 'partner' },
     // { key: 'partnerHeight', text: 'Preferred partner height?', confidential: false, category: 'partner' },
     // { key: 'partnerWeight', text: 'Preferred partner weight?', confidential: false, category: 'partner' },
@@ -44,33 +54,33 @@ const questions = [
 
 async function seedQuestions() {
     try {
-        console.log("database url", MONGODB_URI);
+        // Connect to the database using the provided function.
         await connectDB();
-        try {
-            await Question.deleteMany({});
-            try {
-                const existingQuestions = await Question.find({});
-                if (existingQuestions.length > 0) {
-                    logger.info('Questions already exist, skipping seed');
-                    return;
-                }
-            } catch (error: any) {
-                logger.error(`Error checking existing questions: ${error.message}`);
-                return;
-            }
-            await Question.insertMany(questions);
-            logger.info('Questions seeded successfully')
-        } catch (error: any) {
-            logger.error(`Error connecting to MongoDB: ${error.message}`);
-            return;
+  // 1. Delete all related Answer records first to satisfy the foreign key constraint.
+  const deleteAnswers = await prisma.answer.deleteMany({});
+  console.log(`Deleted ${deleteAnswers.count} existing answers.`);
 
-        }
-        ;
-    } catch (err: any) {
-        logger.error(`Error seeding questions: ${err.message}`);
+  // 2. Then, you can safely delete the Submission records that might exist.
+  const deleteSubmissions = await prisma.submission.deleteMany({});
+  console.log(`Deleted ${deleteSubmissions.count} existing submissions.`);
+
+  // 3. Now, you can delete the Question records.
+  const deleteQuestions = await prisma.question.deleteMany({});
+  console.log(`Deleted ${deleteQuestions.count} existing questions.`);
+
+  // 4. Finally, seed the new questions.
+  const createResult = await prisma.question.createMany({
+      data: questions,
+  });
+  console.log(`Seeded ${createResult.count} questions successfully.`);
+    } catch (error) {
+        // Log a more descriptive error message.
+        console.error(`Error seeding questions: ${error}`);
     } finally {
-        await mongoose.connection.close();
+        // Disconnect from the database to prevent the script from hanging.
+        await prisma.$disconnect();
     }
 }
 
+// Execute the seeding function.
 seedQuestions();
