@@ -1,0 +1,41 @@
+name: Deploy Telegraf Bot to AWS Lambda
+
+on:
+  push:
+    branches:
+      - main # This workflow will run on every push to the main branch
+
+env:
+  # The name of your Lambda function
+  LAMBDA_FUNCTION_NAME: afalagi-telegraf-bot
+  # The AWS region where your Lambda function will be deployed
+  AWS_REGION: us-east-1
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Zip the project for Lambda
+        run: zip -r deploy.zip . -x "*.git*"
+
+      - name: Deploy to AWS Lambda
+        uses: appleboy/lambda-action@master
+        with:
+          aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws_region: ${{ env.AWS_REGION }}
+          function_name: ${{ env.LAMBDA_FUNCTION_NAME }}
+          zip_file: deploy.zip
+          memory: 256
+          timeout: 10

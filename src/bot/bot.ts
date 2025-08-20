@@ -13,7 +13,6 @@ import { restartCommand } from './commands/restart.command';
 import { cancelCommand } from './commands/cancel.command';
 import { userScene } from './scenes/userScene';
 import { adminScene } from './scenes/admin.scene';
-import { APIGateway } from 'telegraf/src/platforms/aws-lambda';
 const bot = new Telegraf(BOT_TOKEN);
 bot.use(session());
 // bot.use(rateLimitMiddleware);
@@ -141,11 +140,40 @@ bot.telegram.setMyCommands([
     { command: 'admin', description: ' (admin only)' },
 ]);
 // Start bot
-bot.launch().then(() => {
-  logger.info('Bot started');
-  connectDB();
-});
+// bot.launch().then(() => {
+//   logger.info('Bot started');
+//   connectDB();
+// });
+// It receives a request from API Gateway and handles it.
+export const handler = async (event: any, context: any) => {
+  try {
+    // Telegraf expects the body to be a JSON object, so we parse it
+    const update = JSON.parse(event.body);
+    
+    // Connect to the database before processing the update
+    await connectDB();
 
+    // Telegraf handles the update and executes the appropriate bot logic
+    await bot.handleUpdate(update);
+
+    // Return a success response to API Gateway
+    return {
+      statusCode: 200,
+      body: JSON.stringify({ message: 'Update handled successfully' }),
+    };
+
+  } catch (error) {
+    console.error('Error handling update:', error);
+    // Return an error response if something goes wrong
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: 'Internal Server Error' }),
+    };
+  } finally {
+    // Ensure the database connection is closed after each invocation
+    await prisma.$disconnect();
+  }
+};
 // Handle graceful shutdown
 process.on('SIGINT', () => {
   bot.stop('SIGINT');
