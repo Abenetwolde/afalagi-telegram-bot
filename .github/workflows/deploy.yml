@@ -3,39 +3,61 @@ name: Deploy Telegraf Bot to AWS Lambda
 on:
   push:
     branches:
-      - main # This workflow will run on every push to the main branch
+      - main
 
 env:
-  # The name of your Lambda function
-  LAMBDA_FUNCTION_NAME: afalagi-telegraf-bot
-  # The AWS region where your Lambda function will be deployed
+  LAMBDA_FUNCTION_NAME: afalagi-seed-db
   AWS_REGION: us-east-1
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
     steps:
+      # 1️⃣ Checkout repo
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Set up Node.js
+      # 2️⃣ Setup Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '18'
 
+      # 3️⃣ Install dependencies
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
-      - name: Zip the project for Lambda
-        run: zip -r deploy.zip . -x "*.git*"
+      # 4️⃣ Build TypeScript
+      - name: Build TypeScript
+        run: npm run build
 
+      # 5️⃣ Prepare Lambda zip package
+      - name: Prepare Lambda package
+        run: |
+          # Copy package.json & package-lock.json to dist
+          cp package*.json dist/
+          # Install only production dependencies inside dist
+          cd dist && npm install --only=prod
+          # Zip everything inside dist
+          cd .. && zip -r deploy.zip dist
+
+      # 6️⃣ Configure AWS credentials
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      # 7️⃣ Deploy to Lambda
       - name: Deploy to AWS Lambda
         uses: appleboy/lambda-action@master
         with:
           aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws_region: ${{ env.AWS_REGION }}
-          function_name: ${{ env.LAMBDA_FUNCTION_NAME }}
+          aaws_region: us-east-1
+          function_name: afalagi-seed-db
           zip_file: deploy.zip
           memory: 256
           timeout: 10
