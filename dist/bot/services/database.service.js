@@ -18,13 +18,14 @@ exports.connectDB = void 0;
 const client_1 = require("@prisma/client");
 const prisma = new client_1.PrismaClient();
 const connectDB = async () => {
-  try {
-    await prisma.$connect();
-    console.log("Connected to PostgreSQL via Prisma");
-  } catch (err) {
-    console.error("DB connection error:", err);
-    process.exit(1);
-  }
+    try {
+        await prisma.$connect();
+        console.log("Connected to PostgreSQL via Prisma");
+    }
+    catch (err) {
+        console.error("DB connection error:", err);
+        process.exit(1);
+    }
 };
 exports.connectDB = connectDB;
 exports.default = prisma;

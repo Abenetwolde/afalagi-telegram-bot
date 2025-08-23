@@ -5,7 +5,7 @@ import { questionnaireScene } from "./scenes/questionnaire.scene";
 import { startCommand } from "./commands/start.command";
 import { rateLimitMiddleware } from "./middleware/raterate-limit.middleware";
 import { errorHandlerMiddleware } from "./middleware/error-handler.middleware";
-import { connectDB } from "./services/database.service";
+import {  connectDB } from "./services/database.service";
 import { logger } from "./services/logger.service";
 import { BOT_TOKEN, ADMIN_IDS } from "./config/config";
 import { reviewCommand } from "./commands/review.command";
@@ -148,19 +148,23 @@ bot.telegram.setMyCommands([
 // It receives a request from API Gateway and handles it.
 export const handler = async (event: any, context: any) => {
   try {
-    // Telegraf expects the body to be a JSON object, so we parse it
-    const update = JSON.parse(event.body);
+    if (!event.body) {
+      console.error("No body in event");
+      return { statusCode: 400, body: JSON.stringify({ error: "Missing body" }) };
+    }
+    let update;
+    try {
+      update = JSON.parse(event.body);
+    } catch (parseError) {
+      console.error("Failed to parse event.body:", parseError);
+      return { statusCode: 400, body: JSON.stringify({ error: "Invalid JSON" }) };
+    }
 
-    // Connect to the database before processing the update
     await connectDB();
-
-    // Telegraf handles the update and executes the appropriate bot logic
     await bot.handleUpdate(update);
-
-    // Return a success response to API Gateway
     return {
       statusCode: 200,
-      body: JSON.stringify({ message: "Update handled successfully" }),
+      body: JSON.stringify({ message: "Update handled successfully" })
     };
   } catch (error) {
     console.error("Error handling update:", error);
@@ -171,7 +175,7 @@ export const handler = async (event: any, context: any) => {
     };
   } finally {
     // Ensure the database connection is closed after each invocation
-    await prisma.$disconnect();
+    // await prisma.$disconnect();
   }
 };
 // Handle graceful shutdown
