@@ -8,7 +8,7 @@ on:
 env:
   LAMBDA_FUNCTION_NAME: afalagi-seed-db
   AWS_REGION: us-east-1
-  S3_BUCKET: afalagi-lambda-deploy # Replace with your actual S3 bucket name, e.g., my-lambda-deploy-bucket
+  S3_BUCKET: afalagi-lambda-deploy  # Your S3 bucket name
 
 jobs:
   deploy:
@@ -33,17 +33,22 @@ jobs:
       - name: Build TypeScript
         run: npm run build
 
-      # 5️⃣ Prepare Lambda zip package
+      # 5️⃣ Check unzipped size
+      - name: Check unzipped size
+        run: du -sh dist
+
+      # 6️⃣ Prepare Lambda zip package
       - name: Prepare Lambda package
         run: |
-          # Copy package.json & package-lock.json to dist
           cp package*.json dist/
-          # Install only production dependencies inside dist
           cd dist && npm install --only=prod
-          # Zip everything inside dist
           cd .. && zip -r deploy.zip dist -x "dist/*.map" "dist/tests/*" "dist/__tests__/*"
 
-      # 6️⃣ Configure AWS credentials
+      # 7️⃣ Check zipped size
+      - name: Check ZIP size
+        run: ls -lh deploy.zip
+
+      # 8️⃣ Configure AWS credentials
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -51,14 +56,15 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
-      # 7️⃣ Upload ZIP to S3
+      # 9️⃣ Upload ZIP to S3
       - name: Upload to S3
         run: aws s3 cp deploy.zip s3://${{ env.S3_BUCKET }}/deploy.zip
 
-      # 8️⃣ Deploy to Lambda from S3
+      # 🔟 Deploy to Lambda from S3
       - name: Deploy to AWS Lambda
         run: |
           aws lambda update-function-code \
             --function-name ${{ env.LAMBDA_FUNCTION_NAME }} \
             --s3-bucket ${{ env.S3_BUCKET }} \
-            --s3-key deploy.zip
+            --s3-key deploy.zip \
+            --publish
