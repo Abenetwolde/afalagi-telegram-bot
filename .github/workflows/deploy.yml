@@ -35,15 +35,13 @@ jobs:
 
       # 5️⃣ Prepare Lambda zip package
       - name: Prepare Lambda package
-      - name: Check ZIP size
-        run: ls -lh deploy.zip
         run: |
           # Copy package.json & package-lock.json to dist
           cp package*.json dist/
           # Install only production dependencies inside dist
           cd dist && npm install --only=prod
           # Zip everything inside dist
-          cd .. && zip -r deploy.zip dist
+          cd .. && zip -r deploy.zip dist -x "dist/*.map" "dist/tests/*" "dist/__tests__/*
 
       # 6️⃣ Configure AWS credentials
       - name: Configure AWS credentials
