@@ -8,6 +8,7 @@ on:
 env:
   LAMBDA_FUNCTION_NAME: afalagi-seed-db
   AWS_REGION: us-east-1
+  S3_BUCKET: afalagi-lambda-deploy # Replace with your actual S3 bucket name, e.g., my-lambda-deploy-bucket
 
 jobs:
   deploy:
@@ -48,16 +49,16 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region:  us-east-1
+          aws-region: us-east-1
 
-      # 7️⃣ Deploy to Lambda
+      # 7️⃣ Upload ZIP to S3
+      - name: Upload to S3
+        run: aws s3 cp deploy.zip s3://${{ env.S3_BUCKET }}/deploy.zip
+
+      # 8️⃣ Deploy to Lambda from S3
       - name: Deploy to AWS Lambda
-        uses: appleboy/lambda-action@master
-        with:
-          aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws_region: us-east-1
-          function_name: afalagi-seed-db
-          zip_file: deploy.zip
-          memory_size: 256
-          timeout: 10
+        run: |
+          aws lambda update-function-code \
+            --function-name ${{ env.LAMBDA_FUNCTION_NAME }} \
+            --s3-bucket ${{ env.S3_BUCKET }} \
+            --s3-key deploy.zip
