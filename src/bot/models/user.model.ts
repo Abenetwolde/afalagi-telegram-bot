@@ -1,4 +1,4 @@
-import { Schema, model } from 'mongoose';
+import { Schema, model } from "mongoose";
 
 export interface IUser {
   telegramId: number;
@@ -13,7 +13,7 @@ const userSchema = new Schema<IUser>({
   username: { type: String },
   isAdmin: { type: Boolean, default: false },
   createdAt: { type: Date, default: Date.now },
-  lastSubmissionId: { type: Schema.Types.ObjectId, ref: 'Submission' },
+  lastSubmissionId: { type: Schema.Types.ObjectId, ref: "Submission" },
 });
 
-export const User = model<IUser>('User', userSchema);
+export const User = model<IUser>("User", userSchema);

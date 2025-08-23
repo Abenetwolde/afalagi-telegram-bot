@@ -1,5 +1,5 @@
-import { Context } from 'telegraf';
-import { SceneSession, SceneSessionData } from 'telegraf/typings/scenes';
+import { Context } from "telegraf";
+import { SceneSession, SceneSessionData } from "telegraf/typings/scenes";
 
 export interface IBotContext extends Context {
   session: SceneSession<SceneSessionData> & {

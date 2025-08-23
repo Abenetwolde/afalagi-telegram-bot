@@ -1,4 +1,4 @@
-import { Schema, model } from 'mongoose';
+import { Schema, model } from "mongoose";
 
 export interface IReputation {
   userId: number;
@@ -10,4 +10,4 @@ const reputationSchema = new Schema<IReputation>({
   score: { type: Number, default: 0 },
 });
 
-export const Reputation = model<IReputation>('Reputation', reputationSchema);
+export const Reputation = model<IReputation>("Reputation", reputationSchema);

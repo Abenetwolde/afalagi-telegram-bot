@@ -1,7 +1,7 @@
-import { Context } from 'telegraf';
-import { RateLimiterMongo } from 'rate-limiter-flexible';
-import { connectDB } from '../services/database.service';
-import { logger } from '../services/logger.service';
+import { Context } from "telegraf";
+import { RateLimiterMongo } from "rate-limiter-flexible";
+import { connectDB } from "../services/database.service";
+import { logger } from "../services/logger.service";
 
 const rateLimiter = new RateLimiterMongo({
   storeClient: connectDB(),
@@ -14,7 +14,9 @@ export async function rateLimitMiddleware(ctx: Context, next: any) {
     await rateLimiter.consume(ctx.from!.id.toString());
     await next();
   } catch (err) {
-    await ctx.reply('You can only submit once per day. Please try again later.');
+    await ctx.reply(
+      "You can only submit once per day. Please try again later.",
+    );
     logger.warn(`Rate limit exceeded for user ${ctx.from!.id}`);
   }
 }
