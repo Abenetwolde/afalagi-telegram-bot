@@ -1,7 +1,11 @@
 const { PrismaClient } = require("@prisma/client");
 
 // const { logger } = require('../../../bot/services/logger.service');
-const prisma = new PrismaClient();
+const prisma = new PrismaClient({datasources: {
+  db: {
+    url: "postgresql://postgres:Ths!Blue7River@localhost:5432/afalagi_bot?schema=public"
+  }
+}});
 
 const connectDB = async () => {
   try {

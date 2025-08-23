@@ -15,7 +15,11 @@
 // db.ts
 import { PrismaClient } from "@prisma/client";
 
-const prisma = new PrismaClient();
+const prisma = new PrismaClient({datasources: {
+    db: {
+      url: "postgresql://postgres:Ths!Blue7River@localhost:5432/afalagi_bot?schema=public"
+    }
+  }});
 
 export const connectDB = async () => {
   try {

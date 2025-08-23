@@ -1,14 +1,9 @@
-name: Deploy Telegraf Bot to AWS Lambda
+name: Deploy Telegraf Bot to EC2
 
 on:
   push:
     branches:
       - main
-
-env:
-  LAMBDA_FUNCTION_NAME: afalagi-seed-db
-  AWS_REGION: us-east-1
-  S3_BUCKET: afalagi-lambda-deploy
 
 jobs:
   deploy:
@@ -32,40 +27,45 @@ jobs:
       - name: Build TypeScript
         run: npm run build
 
-      - name: Check unzipped size
+      - name: Check build size
         run: du -sh dist
 
-      - name: Prepare Lambda package
-        run: |
-          cp package*.json dist/
-          cp -r prisma dist/ # Include prisma schema and generated client
-          cd dist && npm install --production
-          cd .. && zip -r deploy.zip dist -x "dist/*.map" "dist/tests/*" "dist/__tests__/*" "dist/*.md" "dist/data/*" "dist/assets/*"
-
-      - name: Check ZIP size
-        run: ls -lh deploy.zip
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@v1.0.3
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            # Stop existing processes
+            pm2 stop all || true
+            pm2 delete all || true
+            # Remove old code
+            rm -rf ~/afalagi-bot
+            # Create project directory
+            mkdir -p ~/afalagi-bot
+            # Copy new code
+            # (GitHub Actions will handle file transfer below)
+      - name: Copy files to EC2
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: "dist/*,prisma/*,package.json,package-lock.json"
+          target: "~/afalagi-bot"
+          strip_components: 1
 
-      - name: Upload to S3
-        run: aws s3 cp deploy.zip s3://${{ env.S3_BUCKET }}/deploy.zip
-
-      - name: Deploy to AWS Lambda
-        run: |
-          aws lambda update-function-code \
-            --function-name ${{ env.LAMBDA_FUNCTION_NAME }} \
-            --s3-bucket ${{ env.S3_BUCKET }} \
-            --s3-key deploy.zip \
-            --publish
-
-      - name: Update Lambda configuration
-        run: |
-          aws lambda update-function-configuration \
-            --function-name ${{ env.LAMBDA_FUNCTION_NAME }} \
-            --memory-size 256 \
-            --timeout 10
+      - name: Install dependencies and start bot
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            cd ~/afalagi-bot
+            npm ci --production
+            npx prisma generate
+            pm2 start dist/index.js --name afalagi-bot
+            pm2 save
+            pm2 startup
