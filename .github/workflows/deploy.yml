@@ -8,47 +8,43 @@ on:
 env:
   LAMBDA_FUNCTION_NAME: afalagi-seed-db
   AWS_REGION: us-east-1
-  S3_BUCKET: afalagi-lambda-deploy  # Your S3 bucket name
+  S3_BUCKET: afalagi-lambda-deploy
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Checkout repo
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # 2️⃣ Setup Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '20'
 
-      # 3️⃣ Install dependencies
       - name: Install dependencies
         run: npm ci
 
-      # 4️⃣ Build TypeScript
+      - name: Generate Prisma client
+        run: npx prisma generate
+
       - name: Build TypeScript
         run: npm run build
 
-      # 5️⃣ Check unzipped size
       - name: Check unzipped size
         run: du -sh dist
 
-      # 6️⃣ Prepare Lambda zip package
       - name: Prepare Lambda package
         run: |
           cp package*.json dist/
-          cd dist && npm install --only=prod
-          cd .. && zip -r deploy.zip dist -x "dist/*.map" "dist/tests/*" "dist/__tests__/*"
+          cp -r prisma dist/ # Include prisma schema and generated client
+          cd dist && npm install --production
+          cd .. && zip -r deploy.zip dist -x "dist/*.map" "dist/tests/*" "dist/__tests__/*" "dist/*.md" "dist/data/*" "dist/assets/*"
 
-      # 7️⃣ Check zipped size
       - name: Check ZIP size
         run: ls -lh deploy.zip
 
-      # 8️⃣ Configure AWS credentials
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -56,11 +52,9 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
-      # 9️⃣ Upload ZIP to S3
       - name: Upload to S3
         run: aws s3 cp deploy.zip s3://${{ env.S3_BUCKET }}/deploy.zip
 
-      # 🔟 Deploy to Lambda from S3
       - name: Deploy to AWS Lambda
         run: |
           aws lambda update-function-code \
@@ -68,3 +62,10 @@ jobs:
             --s3-bucket ${{ env.S3_BUCKET }} \
             --s3-key deploy.zip \
             --publish
+
+      - name: Update Lambda configuration
+        run: |
+          aws lambda update-function-configuration \
+            --function-name ${{ env.LAMBDA_FUNCTION_NAME }} \
+            --memory-size 256 \
+            --timeout 10
