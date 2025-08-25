@@ -16,7 +16,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '20'
+          node-version: '22.18.0'
 
       - name: Install dependencies
         run: npm ci
@@ -38,11 +38,9 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             bash -lc "
-              # Stop old bot if running
               pm2 stop afalagi-bot || true
               pm2 delete afalagi-bot || true
 
-              # Clean project folder
               rm -rf ~/afalagi-bot
               mkdir -p ~/afalagi-bot
             "
@@ -65,17 +63,27 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             bash -lc "
-              # Load nvm (if Node.js is installed via nvm)
+              # Load nvm
               export NVM_DIR=\$HOME/.nvm
               [ -s \"\$NVM_DIR/nvm.sh\" ] && . \"\$NVM_DIR/nvm.sh\"
 
-              # Use Node.js 20 (or your installed version)
+              # Use Node.js 22.18
               nvm use 22.18 || true
 
-              cd ~/afalagi-bot &&
-              npm ci --production &&
-              npx prisma generate &&
-              pm2 start dist/index.js --name afalagi-bot &&
-              pm2 save &&
+              cd ~/afalagi-bot
+
+              # Install deps (prefer lockfile)
+              if [ -f package-lock.json ]; then
+                npm ci --omit=dev
+              else
+                npm install --omit=dev
+              fi
+
+              # Generate prisma client
+              npx prisma generate
+
+              # Start bot
+              pm2 start dist/index.js --name afalagi-bot
+              pm2 save
               pm2 startup
             "
