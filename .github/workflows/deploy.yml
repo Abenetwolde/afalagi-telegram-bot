@@ -24,6 +24,18 @@ jobs:
           npm install --registry=https://registry.npmjs.org/
           npx prisma generate
           npm run build
+          if [ ! -d "dist" ]; then
+            echo "Build failed: dist directory not created"
+            exit 1
+          fi
+
+      - name: Verify files
+        run: |
+          ls -la
+          ls -la dist || echo "dist directory missing"
+          ls -la prisma || echo "prisma directory missing"
+          test -f package.json || echo "package.json missing"
+          test -f package-lock.json || echo "package-lock.json missing"
 
       - name: Prepare EC2
         uses: appleboy/ssh-action@v1.0.3
@@ -38,16 +50,12 @@ jobs:
             rm -rf ~/afalagi-bot/*
 
       - name: Copy files to EC2
-        uses: appleboy/scp-action@v0.1.4
+        uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
-          source: |
-            dist
-            package.json
-            package-lock.json
-            prisma
+          source: "dist,package.json,package-lock.json,prisma"
           target: ~/afalagi-bot
           strip_components: 0
 
