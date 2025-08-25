@@ -1,4 +1,4 @@
-name: Deploy Afalagi Bot
+name: Deploy Afalagi Bot via Git
 
 on:
   push:
@@ -10,35 +10,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Checkout repository
+      # Checkout repo (optional, needed only if you want logs or actions)
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2️⃣ Setup Node.js 22.18 on runner
-      - name: Setup Node.js 22.18
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22.18
-          registry-url: https://registry.npmjs.org/
-
-      # 3️⃣ Install dependencies on runner
-      - name: Install dependencies
-        run: npm ci --legacy-peer-deps --registry=https://registry.npmjs.org/
-
-      # 4️⃣ Generate Prisma client on runner
-      - name: Generate Prisma client
-        run: npx prisma generate
-
-      # 5️⃣ Build TypeScript project
-      - name: Build project
-        run: npm run build
-
-      # 6️⃣ Check dist size
-      - name: Check build size
-        run: du -sh dist
-
-      # 7️⃣ Prepare EC2: stop old pm2 bot & clean folder
-      - name: Prepare EC2
+      # Deploy on EC2 via SSH
+      - name: Deploy on EC2
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.EC2_HOST }}
@@ -46,49 +23,34 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             bash -lc "
-              pm2 stop afalagi-bot || true
-              pm2 delete afalagi-bot || true
-              rm -rf ~/afalagi-bot
-              mkdir -p ~/afalagi-bot
-            "
-
-      # 8️⃣ Copy files to EC2
-      - name: Copy files to EC2
-        uses: appleboy/scp-action@v0.1.4
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          source: |
-            package.json
-            package-lock.json
-            dist
-            prisma
-          target: ~/afalagi-bot
-          strip_components: 0
-
-      # 9️⃣ Install dependencies & start bot on EC2
-      - name: Install dependencies & start bot
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          script: |
-            bash -lc "
-              # Load nvm on EC2
               export NVM_DIR=\$HOME/.nvm
               [ -s \"\$NVM_DIR/nvm.sh\" ] && . \"\$NVM_DIR/nvm.sh\"
               nvm use 22.18 || true
 
+              # Create project folder if not exists
+              mkdir -p ~/afalagi-bot
               cd ~/afalagi-bot
 
-              # Install dependencies
-              if [ -f package-lock.json ]; then
-                npm ci --omit=dev --registry=https://registry.npmjs.org/
-              else
-                npm install --omit=dev --registry=https://registry.npmjs.org/
+              # Stop existing bot
+              pm2 stop afalagi-bot || true
+              pm2 delete afalagi-bot || true
+
+              # Initialize git if first deploy
+              if [ ! -d .git ]; then
+                git init
+                git remote add origin git@github.com:${{ github.repository }}.git
+                git fetch --all
               fi
+
+              # Pull latest code
+              git reset --hard origin/main
+
+              # Install dependencies
+              npm ci --omit=dev --registry=https://registry.npmjs.org/
+
+              # Build and generate Prisma client
+              npx prisma generate
+              npm run build
 
               # Start bot
               pm2 start dist/index.js --name afalagi-bot
