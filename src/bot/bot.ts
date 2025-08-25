@@ -158,7 +158,7 @@ async function startBot() {
 
 startBot();
 
-startBot();
+// startBot();
 // Start bot
 // bot.launch().then(() => {
 //   logger.info('Bot started');
