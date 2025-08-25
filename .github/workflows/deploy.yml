@@ -1,4 +1,4 @@
-name: Deploy Afalagi Bot via Git
+name: Deploy Afalagi Bot
 
 on:
   push:
@@ -10,12 +10,48 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Checkout repo (optional, needed only if you want logs or actions)
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # Deploy on EC2 via SSH
-      - name: Deploy on EC2
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.18
+          registry-url: https://registry.npmjs.org/
+
+      - name: Install dependencies & Build
+        run: |
+          npm install --registry=https://registry.npmjs.org/
+          npx prisma generate
+          npm run build
+
+      - name: Prepare EC2
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            mkdir -p ~/afalagi-bot
+            pm2 stop afalagi-bot || true
+            pm2 delete afalagi-bot || true
+            rm -rf ~/afalagi-bot/*
+
+      - name: Copy files to EC2
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: |
+            dist
+            package.json
+            package-lock.json
+            prisma
+          target: ~/afalagi-bot
+          strip_components: 0
+
+      - name: Install dependencies & Start bot on EC2
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.EC2_HOST }}
@@ -26,33 +62,8 @@ jobs:
               export NVM_DIR=\$HOME/.nvm
               [ -s \"\$NVM_DIR/nvm.sh\" ] && . \"\$NVM_DIR/nvm.sh\"
               nvm use 22.18 || true
-
-              # Create project folder if not exists
-              mkdir -p ~/afalagi-bot
               cd ~/afalagi-bot
-
-              # Stop existing bot
-              pm2 stop afalagi-bot || true
-              pm2 delete afalagi-bot || true
-
-              # Initialize git if first deploy
-              if [ ! -d .git ]; then
-                git init
-                git remote add origin git@github.com:${{ github.repository }}.git
-                git fetch --all
-              fi
-
-              # Pull latest code
-              git reset --hard origin/main
-
-              # Install dependencies
               npm ci --omit=dev --registry=https://registry.npmjs.org/
-
-              # Build and generate Prisma client
-              npx prisma generate
-              npm run build
-
-              # Start bot
               pm2 start dist/index.js --name afalagi-bot
               pm2 save
               pm2 startup
