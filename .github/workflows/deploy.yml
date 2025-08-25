@@ -70,7 +70,7 @@ jobs:
               [ -s \"\$NVM_DIR/nvm.sh\" ] && . \"\$NVM_DIR/nvm.sh\"
 
               # Use Node.js 20 (or your installed version)
-              nvm use 20 || true
+              nvm use 22.18 || true
 
               cd ~/afalagi-bot &&
               npm ci --production &&
