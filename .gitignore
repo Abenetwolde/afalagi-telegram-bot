@@ -40,5 +40,5 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-/src/generated/prisma
+
 src/scripts/google-chrome-stable_current_amd64.deb

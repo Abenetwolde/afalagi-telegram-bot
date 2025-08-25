@@ -23,7 +23,7 @@ jobs:
         run: |
           npm install --registry=https://registry.npmjs.org/
           npx prisma generate
-          npm run build
+          npm run build --verbose
           if [ ! -d "dist" ]; then
             echo "Build failed: dist directory not created"
             exit 1
