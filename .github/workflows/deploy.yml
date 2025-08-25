@@ -30,7 +30,7 @@ jobs:
       - name: Check build size
         run: du -sh dist
 
-      - name: Deploy to EC2 (prepare folder & stop old pm2)
+      - name: Prepare EC2 (stop old pm2 and clean folder)
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.EC2_HOST }}
@@ -65,6 +65,13 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             bash -lc "
+              # Load nvm (if Node.js is installed via nvm)
+              export NVM_DIR=\$HOME/.nvm
+              [ -s \"\$NVM_DIR/nvm.sh\" ] && . \"\$NVM_DIR/nvm.sh\"
+
+              # Use Node.js 20 (or your installed version)
+              nvm use 20 || true
+
               cd ~/afalagi-bot &&
               npm ci --production &&
               npx prisma generate &&
