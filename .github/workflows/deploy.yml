@@ -30,22 +30,23 @@ jobs:
       - name: Check build size
         run: du -sh dist
 
-      - name: Deploy to EC2
+      - name: Deploy to EC2 (prepare folder & stop old pm2)
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            # Stop existing processes
-            pm2 stop all || true
-            pm2 delete all || true
-            # Remove old code
-            rm -rf ~/afalagi-bot
-            # Create project directory
-            mkdir -p ~/afalagi-bot
-            # Copy new code
-            # (GitHub Actions will handle file transfer below)
+            bash -lc "
+              # Stop old bot if running
+              pm2 stop afalagi-bot || true
+              pm2 delete afalagi-bot || true
+
+              # Clean project folder
+              rm -rf ~/afalagi-bot
+              mkdir -p ~/afalagi-bot
+            "
+
       - name: Copy files to EC2
         uses: appleboy/scp-action@v0.1.4
         with:
@@ -63,9 +64,11 @@ jobs:
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            cd ~/afalagi-bot
-            npm ci --production
-            npx prisma generate
-            pm2 start dist/index.js --name afalagi-bot
-            pm2 save
-            pm2 startup
+            bash -lc "
+              cd ~/afalagi-bot &&
+              npm ci --production &&
+              npx prisma generate &&
+              pm2 start dist/index.js --name afalagi-bot &&
+              pm2 save &&
+              pm2 startup
+            "
