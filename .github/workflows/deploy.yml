@@ -19,10 +19,31 @@ jobs:
         with:
           node-version: 22.18
           registry-url: https://registry.npmjs.org/
+          cache: 'npm' # Cache npm dependencies
+
+      - name: Cache node_modules
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
 
       - name: Install dependencies & Build
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
-          npm install --registry=https://registry.npmjs.org/
+          # Retry npm ci up to 3 times with 10s delay
+          for i in {1..3}; do
+            npm ci --registry=https://registry.npmjs.org/ && break || {
+              echo "npm ci failed, attempt $i/3"
+              sleep 10
+              if [ $i -eq 3 ]; then
+                echo "npm ci failed after 3 attempts"
+                exit 1
+              fi
+            }
+          done
           npx prisma generate
           npm run build --verbose
           if [ ! -d "dist" ]; then
@@ -71,6 +92,7 @@ jobs:
           source: "dist,package.json,package-lock.json,prisma"
           target: ~/afalagi-bot
           strip_components: 0
+          overwrite: true
 
       - name: Verify files on EC2
         uses: appleboy/ssh-action@v1.0.3
@@ -97,6 +119,7 @@ jobs:
               nvm use 22.18 || true
               cd ~/afalagi-bot
               npm ci --omit=dev --registry=https://registry.npmjs.org/
+              chmod +x dist/bot/bot.js
               pm2 start dist/bot/bot.js --name afalagi-bot || {
                 echo 'Failed to start PM2. Listing dist contents:'
                 ls -la dist
