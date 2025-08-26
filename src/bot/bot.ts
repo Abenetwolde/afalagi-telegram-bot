@@ -146,7 +146,7 @@ async function startBot() {
     await bot.launch({
       webhook: {
         domain: `ec2-54-211-12-104.compute-1.amazonaws.com`,
-        port: 80
+        port: 3000, // Changed to 3000
       }
     });
     console.log("Bot started with webhook");
