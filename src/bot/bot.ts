@@ -129,7 +129,11 @@ bot.command('admin', async (ctx: any) => {
   }
   await ctx.scene.enter('admin');
 });
-
+// Log incoming webhook requests
+bot.use((ctx, next) => {
+  console.log("Received webhook update:", JSON.stringify(ctx.update, null, 2));
+  return next();
+});
 
 bot.telegram.setMyCommands([
   { command: 'start', description: 'Start the bot and show main menu' },
