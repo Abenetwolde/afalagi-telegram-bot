@@ -1,3 +1,4 @@
+```yaml
 name: Deploy Afalagi Bot
 
 on:
@@ -33,6 +34,8 @@ jobs:
         run: |
           ls -la
           ls -la dist || echo "dist directory missing"
+          ls -la dist/* || echo "dist subdirectories empty"
+          test -f dist/bot/bot.js || echo "dist/bot/bot.js missing"
           ls -la prisma || echo "prisma directory missing"
           test -f package.json || echo "package.json missing"
           test -f package-lock.json || echo "package-lock.json missing"
@@ -44,10 +47,16 @@ jobs:
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            mkdir -p ~/afalagi-bot
-            pm2 stop afalagi-bot || true
-            pm2 delete afalagi-bot || true
-            rm -rf ~/afalagi-bot/*
+            bash -lc "
+              export NVM_DIR=\$HOME/.nvm
+              [ -s \"\$NVM_DIR/nvm.sh\" ] && . \"\$NVM_DIR/nvm.sh\"
+              nvm use 22.18 || nvm install 22.18
+              npm install -g pm2
+              mkdir -p ~/afalagi-bot
+              pm2 stop afalagi-bot || true
+              pm2 delete afalagi-bot || true
+              rm -rf ~/afalagi-bot/*
+            "
 
       - name: Copy files to EC2
         uses: appleboy/scp-action@v0.1.7
@@ -58,6 +67,18 @@ jobs:
           source: "dist,package.json,package-lock.json,prisma"
           target: ~/afalagi-bot
           strip_components: 0
+
+      - name: Verify files on EC2
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            ls -la ~/afalagi-bot
+            ls -la ~/afalagi-bot/dist || echo "dist directory missing on EC2"
+            ls -la ~/afalagi-bot/dist/* || echo "dist subdirectories empty on EC2"
+            test -f ~/afalagi-bot/dist/bot/bot.js || echo "dist/bot/bot.js missing on EC2"
 
       - name: Install dependencies & Start bot on EC2
         uses: appleboy/ssh-action@v1.0.3
@@ -72,7 +93,12 @@ jobs:
               nvm use 22.18 || true
               cd ~/afalagi-bot
               npm ci --omit=dev --registry=https://registry.npmjs.org/
-              pm2 start dist/index.js --name afalagi-bot
+              pm2 start dist/bot/bot.js --name afalagi-bot || {
+                echo 'Failed to start PM2. Listing dist contents:'
+                ls -la dist
+                exit 1
+              }
               pm2 save
               pm2 startup
             "
+```
