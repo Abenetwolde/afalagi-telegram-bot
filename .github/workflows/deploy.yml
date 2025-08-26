@@ -29,12 +29,16 @@ jobs:
             echo "Build failed: dist directory not created"
             exit 1
           fi
+          if [ ! -f "dist/bot/bot.js" ]; then
+            echo "Build failed: dist/bot/bot.js not created"
+            exit 1
+          fi
 
       - name: Verify files
         run: |
           ls -la
           ls -la dist || echo "dist directory missing"
-          ls -la dist/* || echo "dist subdirectories empty"
+          ls -la dist/bot || echo "dist/bot directory missing"
           test -f dist/bot/bot.js || echo "dist/bot/bot.js missing"
           ls -la prisma || echo "prisma directory missing"
           test -f package.json || echo "package.json missing"
@@ -77,7 +81,7 @@ jobs:
           script: |
             ls -la ~/afalagi-bot
             ls -la ~/afalagi-bot/dist || echo "dist directory missing on EC2"
-            ls -la ~/afalagi-bot/dist/* || echo "dist subdirectories empty on EC2"
+            ls -la ~/afalagi-bot/dist/bot || echo "dist/bot directory missing on EC2"
             test -f ~/afalagi-bot/dist/bot/bot.js || echo "dist/bot/bot.js missing on EC2"
 
       - name: Install dependencies & Start bot on EC2
@@ -96,6 +100,7 @@ jobs:
               pm2 start dist/bot/bot.js --name afalagi-bot || {
                 echo 'Failed to start PM2. Listing dist contents:'
                 ls -la dist
+                ls -la dist/bot
                 exit 1
               }
               pm2 save

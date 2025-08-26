@@ -21,7 +21,115 @@
 /build
 
 # misc
-.DS_Store
+.DS_Store```yaml
+name: Deploy Afalagi Bot
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.18
+          registry-url: https://registry.npmjs.org/
+
+      - name: Install dependencies & Build
+        run: |
+          npm install --registry=https://registry.npmjs.org/
+          npx prisma generate
+          npm run build --verbose
+          if [ ! -d "dist" ]; then
+            echo "Build failed: dist directory not created"
+            exit 1
+          fi
+          if [ ! -f "dist/bot/bot.js" ]; then
+            echo "Build failed: dist/bot/bot.js not created"
+            exit 1
+          fi
+
+      - name: Verify files
+        run: |
+          ls -la
+          ls -la dist || echo "dist directory missing"
+          ls -la dist/bot || echo "dist/bot directory missing"
+          test -f dist/bot/bot.js || echo "dist/bot/bot.js missing"
+          ls -la prisma || echo "prisma directory missing"
+          test -f package.json || echo "package.json missing"
+          test -f package-lock.json || echo "package-lock.json missing"
+
+      - name: Prepare EC2
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            bash -lc "
+              export NVM_DIR=\$HOME/.nvm
+              [ -s \"\$NVM_DIR/nvm.sh\" ] && . \"\$NVM_DIR/nvm.sh\"
+              nvm use 22.18 || nvm install 22.18
+              npm install -g pm2
+              mkdir -p ~/afalagi-bot
+              pm2 stop afalagi-bot || true
+              pm2 delete afalagi-bot || true
+              rm -rf ~/afalagi-bot/*
+            "
+
+      - name: Copy files to EC2
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: "dist,package.json,package-lock.json,prisma"
+          target: ~/afalagi-bot
+          strip_components: 0
+
+      - name: Verify files on EC2
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            ls -la ~/afalagi-bot
+            ls -la ~/afalagi-bot/dist || echo "dist directory missing on EC2"
+            ls -la ~/afalagi-bot/dist/bot || echo "dist/bot directory missing on EC2"
+            test -f ~/afalagi-bot/dist/bot/bot.js || echo "dist/bot/bot.js missing on EC2"
+
+      - name: Install dependencies & Start bot on EC2
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            bash -lc "
+              export NVM_DIR=\$HOME/.nvm
+              [ -s \"\$NVM_DIR/nvm.sh\" ] && . \"\$NVM_DIR/nvm.sh\"
+              nvm use 22.18 || true
+              cd ~/afalagi-bot
+              npm ci --omit=dev --registry=https://registry.npmjs.org/
+              pm2 start dist/bot/bot.js --name afalagi-bot || {
+                echo 'Failed to start PM2. Listing dist contents:'
+                ls -la dist
+                ls -la dist/bot
+                exit 1
+              }
+              pm2 save
+              pm2 startup
+            "
+```
 *.pem
 
 # debug
