@@ -17,7 +17,7 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient({datasources: {
     db: {
-  url: "postgresql://postgres:Ths!Blue7River@afalagi-bot-db.cgt846uc8bpa.us-east-1.rds.amazonaws.com:5432/afalagi_bot?schema=public"
+  url: "postgresql://postgres:Ths!Blue7River@afalagi-bot-db.cgt846uc8bpa.us-east-1.rds.amazonaws.com:5432/afalagi-bot-db?schema=public"
     }
   }});
 
